@@ -34,3 +34,39 @@ func ReadCRConfigFromEnvYaml() (*CRConfig, error) {
 	}
 	return ReadCRConfigFromFile(strings.NewReader(content))
 }
+
+func (cr *CRConfig) AddToConfigs(svcName, name, value string) {
+	if cr.Configs[svcName] == nil {
+		cr.Configs[svcName] = []NameValue{
+			{
+				Name:  name,
+				Value: value,
+			},
+		}
+	} else {
+		//append to the config
+		nv := NameValue{
+			Name:  name,
+			Value: value,
+		}
+		cr.Configs[svcName] = append(cr.Configs[svcName], nv)
+	}
+}
+
+func (cr *CRConfig) AddToSecrets(svcName, name, value string) {
+	if cr.Secrets[svcName] == nil {
+		cr.Secrets[svcName] = []NameValue{
+			{
+				Name:  name,
+				Value: value,
+			},
+		}
+	} else {
+		//append to the config
+		nv := NameValue{
+			Name:  name,
+			Value: value,
+		}
+		cr.Secrets[svcName] = append(cr.Secrets[svcName], nv)
+	}
+}

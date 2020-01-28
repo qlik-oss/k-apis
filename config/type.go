@@ -10,7 +10,7 @@ import (
 // customer will add patch into .configuration folder
 type CRConfig struct {
 	// relative to manifestsRoot folder, ex. ./manifests/base
-	ConfigProfile    string                 `json:"profile" yaml:"profile"`
+	Profile          string                 `json:"profile" yaml:"profile"`
 	Secrets          map[string][]NameValue `json:"secrets,omitempty" yaml:"secrets,omitempty"`
 	Configs          map[string][]NameValue `json:"configs,omitempty" yaml:"configs,omitempty"`
 	ManifestsRoot    string                 `json:"manifestsRoot,omitempty" yaml:"manifestsRoot,omitempty"`
