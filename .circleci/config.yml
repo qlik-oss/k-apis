@@ -42,13 +42,7 @@ jobs:
 
 workflows:
   version: 2
-  commit:
-    jobs:
-      - test:
-          filters:
-            branches:
-              only: sanat_circleci
-  release:
+  workflow1:
     jobs:
       - test:
           filters:
