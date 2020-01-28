@@ -1,6 +1,8 @@
 package cr
 
 import (
+	"context"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -8,6 +10,7 @@ import (
 	"path/filepath"
 
 	"github.com/Shopify/ejson"
+	"github.com/google/go-github/github"
 	"github.com/qlik-oss/k-apis/config"
 	"github.com/qlik-oss/k-apis/qust"
 	"github.com/qlik-oss/k-apis/state"
