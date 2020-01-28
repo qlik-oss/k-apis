@@ -17,18 +17,21 @@ jobs:
     #### expecting it in the form of
     ####   /go/src/github.com/circleci/go-tool
     ####   /go/src/bitbucket.org/circleci/go-tool
-    working_directory: /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}}
+    working_directory: /go/src/github.com/qlik-oss/k-apis
     steps:
       - checkout
-      - run: make xbuild-all
-
+      - run: make build
+  publish-release:
+    docker:
+      - image: circleci/golang:1.9
       # specify any bash command here prefixed with `run: `
+    steps:
       - run: 
-        name: "Publish Release"
-        command: | 
-          go get github.com/tcnksm/ghr
-          VERSION=$(my-binary --version)
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./artifacts/
+          name: "Publish Release"
+          command: | 
+            go get github.com/tcnksm/ghr
+            VERSION=$(my-binary --version)
+              ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./artifacts/
 
 
       
