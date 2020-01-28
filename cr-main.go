@@ -1,6 +1,8 @@
 package cr
 
 import (
+	"context"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -8,9 +10,14 @@ import (
 	"path/filepath"
 
 	"github.com/Shopify/ejson"
+	"github.com/google/go-github/github"
 	"github.com/qlik-oss/k-apis/config"
 	"github.com/qlik-oss/k-apis/qust"
 	"github.com/qlik-oss/k-apis/state"
+	"golang.org/x/oauth2"
+
+	"gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4/plumbing"
 )
 
 const (
@@ -19,12 +26,65 @@ const (
 	backupConfigMapName = "qliksense-operator-state-backup"
 )
 
+var (
+	k8sRepo = filepath.Join(os.Getenv("GOPATH"), "qlik-oss/qliksense-k8s")
+)
+
 func GeneratePatches(cr *config.CRConfig) {
 	if cr.Git.Repository == "" {
 		createPatches(cr)
 	} else {
 		// TODO: add git pull functionality
 		log.Println("Download from git repo and then call createPatches")
+		r, err := git.PlainOpen(cr.Git.Repository)
+		if err != nil {
+			log.Printf("error opening repository: %v\n", err)
+		}
+		w, err := r.Worktree()
+		if err != nil {
+			log.Println("error getting working tree")
+		}
+		err = w.Pull(&git.PullOptions{RemoteName: "origin"})
+		if err == nil {
+			headRef, err := r.Head()
+			if err != nil {
+				log.Println("error getting working tree")
+			}
+
+			ref := plumbing.NewHashReference("refs/heads/pr-branch", headRef.Hash())
+
+			err = r.Storer.SetReference(ref)
+			if err != nil {
+				log.Println("error setting reference to new branch")
+			}
+			makePrWithPatches(cr, ref.Name())
+		}
+		log.Printf("error getting working tree: %v\n", err)
+
+	}
+}
+
+func makePrWithPatches(cr *config.CRConfig, branch plumbing.ReferenceName) {
+	//createPatches(cr)
+	ctx := context.Background()
+	ts := oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: cr.Git.AccessToken},
+	)
+	tc := oauth2.NewClient(ctx, ts)
+	client := github.NewClient(tc)
+
+	newPR := &github.NewPullRequest{
+		Title:               github.String("k-apis PR"),
+		Head:                github.String(branch.String()),
+		Base:                github.String("master"),
+		Body:                github.String("auto generated pr"),
+		MaintainerCanModify: github.Bool(true),
+	}
+
+	_, _, err := client.PullRequests.Create(context.Background(), cr.Git.UserName, cr.Git.Repository, newPR)
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
 }
 
