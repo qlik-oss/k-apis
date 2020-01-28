@@ -40,25 +40,3 @@ jobs:
 
 
 
-workflows:
-  version: 2
-  commit:
-    jobs:
-      - test:
-          filters:
-            branches:
-              only: sanat_circleci
-  release:
-    jobs:
-      - test:
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /v.*/
-      - release:
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /v.*/
