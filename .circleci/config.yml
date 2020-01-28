@@ -52,4 +52,6 @@ workflows:
           filters:
             branches:
               only: sanat_circleci
+            tags:
+              only: /v.*/
       
