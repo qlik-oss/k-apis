@@ -2,12 +2,14 @@ package cr
 
 import (
 	"context"
+	"crypto/rand"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"path"
 	"path/filepath"
+	"time"
 
 	"github.com/Shopify/ejson"
 	"github.com/google/go-github/github"
