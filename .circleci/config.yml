@@ -14,7 +14,7 @@ jobs:
           name: "Publish Release"
           command: | 
             go get github.com/tcnksm/ghr
-            VERSION=$(my-binary --version)
+            VERSION=$(k-apis --version)
               ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./artifacts/
 
 
