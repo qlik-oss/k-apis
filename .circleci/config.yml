@@ -3,7 +3,7 @@
 # Check https://circleci.com/docs/2.0/language-go/ for more details
 version: 2
 jobs:
-  build:
+  test:
     docker:
       # specify the version
       - image: circleci/golang:1.13
@@ -40,3 +40,26 @@ jobs:
 
 
 
+workflows:
+  version: 2
+  commit:
+    jobs:
+      - test:
+          filters:
+            branches:
+              only: sanat_circleci
+      - release:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v.*/
+  release:
+    jobs:
+      - test:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v.*/
+      
