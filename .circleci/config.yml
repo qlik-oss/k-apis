@@ -9,9 +9,9 @@ jobs:
       # specify any bash command here prefixed with `run: `
     working_directory: /go/src/github.com/qlik-oss/k-apis
     steps:
+      - checkout
       - attach_workspace:
           at: ./artifacts
-      - checkout
       - run: 
           name: "Publish Release"
           command: | 
