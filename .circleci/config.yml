@@ -47,12 +47,12 @@ workflows:
       - test:
           filters:
             branches:
-              ignore: /.*/
-            tags:
-              only: /v.*/
+              only: sanat_circleci
       - release:
           filters:
             branches:
               ignore: /.*/
             tags:
               only: /v.*/
+
+      
