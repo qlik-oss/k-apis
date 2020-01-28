@@ -34,9 +34,32 @@ jobs:
           name: "Publish Release"
           command: |
             go get github.com/tcnksm/ghr
-            go get github.com/mitchellh/gox
-            gox -ldflags "-X main.Version $BUILD_VERSION -X main.BuildDate $BUILD_DATE" -output "dist/ncd_{{.OS}}_{{.Arch}}"
-            ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace `git describe --tags` dist/
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${CIRCLE_TAG}  /go/src/github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/bin/${CIRCLE_TAG}/
+workflows:
+  version: 2
+  commit:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only: master
+  build_release:
+    jobs:
+      - build:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v.*/
+      - build_release:
+          requires:
+            - build
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v.*/
+
 
 
 
