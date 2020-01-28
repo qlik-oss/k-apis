@@ -20,7 +20,7 @@ jobs:
     working_directory: /go/src/github.com/qlik-oss/k-apis
     steps:
       - checkout
-      - run: make build
+      - run: make xbuild-all
   publish-release:
     docker:
       - image: circleci/golang:1.9
