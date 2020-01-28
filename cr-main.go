@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"time"
 
 	"github.com/Shopify/ejson"
 	"github.com/google/go-github/github"
@@ -18,6 +19,8 @@ import (
 
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
+	"gopkg.in/src-d/go-git.v4/plumbing/object"
+	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
 )
 
 const (
@@ -30,38 +33,85 @@ func GeneratePatches(cr *config.CRSpec) {
 	if cr.Git.Repository == "" {
 		createPatches(cr)
 	} else {
-		// TODO: add git pull functionality
 		log.Println("Download from git repo and then call createPatches")
+
+		//Open Git Repositorty
 		r, err := git.PlainOpen(cr.Git.Repository)
 		if err != nil {
 			log.Printf("error opening repository: %v\n", err)
+			return
 		}
 		w, err := r.Worktree()
 		if err != nil {
-			log.Println("error getting working tree")
+			log.Printf("error getting working tree: %v\n", err)
+			return
 		}
+
+		err = w.Checkout(&git.CheckoutOptions{
+			Branch: "refs/heads/master",
+			Force:  true,
+		})
+		if err != nil {
+			log.Printf("error setting reference to new branch: %v\n", err)
+		}
+
 		err = w.Pull(&git.PullOptions{RemoteName: "origin"})
-		if err == nil {
-			headRef, err := r.Head()
-			if err != nil {
-				log.Println("error getting working tree")
-			}
-
-			ref := plumbing.NewHashReference("refs/heads/pr-branch", headRef.Hash())
-
-			err = r.Storer.SetReference(ref)
-			if err != nil {
-				log.Println("error setting reference to new branch")
-			}
-			makePrWithPatches(cr, ref.Name())
+		if err != git.NoErrAlreadyUpToDate && err != nil {
+			log.Printf("error pulling working tree: %v\n", err)
 		}
-		log.Printf("error getting working tree: %v\n", err)
+		headRef, err := r.Head()
+		if err != nil {
+			log.Printf("error setting head: %v\n", err)
+		}
 
+		reference := plumbing.NewBranchReferenceName(
+			fmt.Sprintf("refs/heads/pr-branch-%s", tokenGenerator()),
+		)
+		fmt.Println(reference)
+		ref := plumbing.NewHashReference(reference, headRef.Hash())
+
+		err = r.Storer.SetReference(ref)
+		if err != nil {
+			log.Printf("error setting reference to new branch: %v\n", err)
+		}
+		err = w.Checkout(&git.CheckoutOptions{
+			Branch: ref.Name(),
+			Force:  true,
+		})
+		if err != nil {
+			log.Printf("error setting reference to new branch: %v\n", err)
+		}
+		makePrWithPatches(cr, r, w, ref.Name())
 	}
 }
 
-func makePrWithPatches(cr *config.CRConfig, branch plumbing.ReferenceName) {
+func makePrWithPatches(cr *config.CRConfig, r *git.Repository, w *git.Worktree, branch plumbing.ReferenceName) {
+
 	//createPatches(cr)
+
+	filename := filepath.Join(cr.Git.Repository, "example-git-file")
+	err := ioutil.WriteFile(filename, []byte("hello world5!"), 0644)
+
+	_, err = w.Add(".")
+
+	_, err = w.Commit("k-apis pr", &git.CommitOptions{
+		Author: &object.Signature{
+			Name: cr.Git.UserName,
+			When: time.Now(),
+		},
+	})
+
+	err = r.Push(&git.PushOptions{
+		Auth: &http.BasicAuth{
+			Username: cr.Git.UserName,
+			Password: cr.Git.Password,
+		},
+	})
+	if err != nil {
+		log.Printf("error creating push: %v\n", err)
+		return
+	}
+
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: cr.Git.AccessToken},
@@ -77,9 +127,9 @@ func makePrWithPatches(cr *config.CRConfig, branch plumbing.ReferenceName) {
 		MaintainerCanModify: github.Bool(true),
 	}
 
-	_, _, err := client.PullRequests.Create(context.Background(), cr.Git.UserName, cr.Git.Repository, newPR)
+	_, _, err = client.PullRequests.Create(context.Background(), cr.Git.UserName, "golang-server", newPR)
 	if err != nil {
-		fmt.Println(err)
+		log.Printf("error creating pr: %v\n", err)
 		return
 	}
 }
