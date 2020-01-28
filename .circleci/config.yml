@@ -36,33 +36,6 @@ jobs:
             go get github.com/tcnksm/ghr
             ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${CIRCLE_TAG}  /go/src/github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/bin/${CIRCLE_TAG}/
 
-            
-workflows:
-  version: 2
-  commit:
-    jobs:
-      - build:
-          filters:
-            branches:
-              only: master
-  build_release:
-    jobs:
-      - build:
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /v.*/
-      - build_release:
-          requires:
-            - build
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /v.*/
-
-
 
 
 workflows:
