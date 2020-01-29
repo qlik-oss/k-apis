@@ -10,14 +10,14 @@ import (
 // customer will add patch into .configuration folder
 type CRSpec struct {
 	// relative to manifestsRoot folder, ex. ./manifests/base
-	Profile          string                 `json:"profile" yaml:"profile"`
-	Secrets          map[string][]NameValue `json:"secrets,omitempty" yaml:"secrets,omitempty"`
-	Configs          map[string][]NameValue `json:"configs,omitempty" yaml:"configs,omitempty"`
-	ManifestsRoot    string                 `json:"manifestsRoot,omitempty" yaml:"manifestsRoot,omitempty"`
-	RotateKeys       string                 `json:"rotateKeys,omitempty" yaml:"rotateKeys,omitempty"`
-	StorageClassName string                 `json:"storageClassName,omitempty" yaml:"storageClassName,omitempty"`
-	NameSpace        string                 `json:"namespace,omitempty" yaml:"namespace,omitempty"`
-	Git              Repo                   `json:"git,omitempty" yaml:"git,omitempty"`
+	Profile          string                `json:"profile" yaml:"profile"`
+	Secrets          map[string]NameValues `json:"secrets,omitempty" yaml:"secrets,omitempty"`
+	Configs          map[string]NameValues `json:"configs,omitempty" yaml:"configs,omitempty"`
+	ManifestsRoot    string                `json:"manifestsRoot,omitempty" yaml:"manifestsRoot,omitempty"`
+	RotateKeys       string                `json:"rotateKeys,omitempty" yaml:"rotateKeys,omitempty"`
+	StorageClassName string                `json:"storageClassName,omitempty" yaml:"storageClassName,omitempty"`
+	NameSpace        string                `json:"namespace,omitempty" yaml:"namespace,omitempty"`
+	Git              Repo                  `json:"git,omitempty" yaml:"git,omitempty"`
 }
 
 type SelectivePatch struct {
@@ -41,6 +41,9 @@ type SupperSecret struct {
 	Data       map[string]string `yaml:"data,omitempty"`
 	StringData map[string]string `yaml:"stringData,omitempty"`
 }
+
+// operator-sdk needs named type
+type NameValues []NameValue
 
 type NameValue struct {
 	Name  string `yaml:"name" json:"name"`

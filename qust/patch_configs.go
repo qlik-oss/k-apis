@@ -27,7 +27,7 @@ func ProcessConfigs(cr *config.CRSpec) {
 }
 
 // create a selectivepatch map for each service for a dataKey
-func createSupperConfigSelectivePatch(confg map[string][]config.NameValue) map[string]*config.SelectivePatch {
+func createSupperConfigSelectivePatch(confg map[string]config.NameValues) map[string]*config.SelectivePatch {
 	spMap := make(map[string]*config.SelectivePatch)
 	for svc, data := range confg {
 		sp := getSuperConfigSPTemplate(svc)
