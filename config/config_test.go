@@ -54,3 +54,23 @@ func TestReadCRSpecFromEnvYaml(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestDeepCopy(t *testing.T) {
+	os.Setenv("YAML_CONF", "")
+	_, err := ReadCRSpecFromEnvYaml()
+	if err == nil {
+		t.Fail()
+	}
+	setup(t)
+	cfg, err := ReadCRSpecFromEnvYaml()
+	if err != nil {
+		t.Fatalf("error reading config from env")
+	}
+	cfg2 := cfg.DeepCopy()
+
+	if cfg2.Profile != cfg.Profile {
+		t.Logf("expected: %s, actual: %s", cfg.Profile, cfg2.Profile)
+		t.Fail()
+	}
+
+}

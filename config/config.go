@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"github.com/jinzhu/copier"
 	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
@@ -69,4 +70,17 @@ func (cr *CRSpec) AddToSecrets(svcName, name, value string) {
 		}
 		cr.Secrets[svcName] = append(cr.Secrets[svcName], nv)
 	}
+}
+
+func (in *CRSpec) DeepCopyInto(out *CRSpec) {
+	copier.Copy(out, in)
+}
+
+func (in *CRSpec) DeepCopy() *CRSpec {
+	if in == nil {
+		return nil
+	}
+	out := new(CRSpec)
+	in.DeepCopyInto(out)
+	return out
 }

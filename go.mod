@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	github.com/Shopify/ejson v1.2.1
+	github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a
 	github.com/mholt/archiver/v3 v3.3.0
 	github.com/qlik-oss/qliksense-operator v0.2.1
 	github.com/stretchr/testify v1.4.0
