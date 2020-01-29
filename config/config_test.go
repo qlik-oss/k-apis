@@ -20,9 +20,9 @@ func setup(t *testing.T) io.Reader {
 	return strings.NewReader(sampleConfig)
 }
 
-func TestReadCRConfigFromFile(t *testing.T) {
+func TestReadCRSpecFromFile(t *testing.T) {
 	reader := setup(t)
-	cfg, err := ReadCRConfigFromFile(reader)
+	cfg, err := ReadCRSpecFromFile(reader)
 	if err != nil {
 		t.Fatalf("error reading config from file")
 	}
@@ -36,14 +36,14 @@ func TestReadCRConfigFromFile(t *testing.T) {
 
 }
 
-func TestReadCRConfigFromEnvYaml(t *testing.T) {
+func TestReadCRSpecFromEnvYaml(t *testing.T) {
 	os.Setenv("YAML_CONF", "")
-	_, err := ReadCRConfigFromEnvYaml()
+	_, err := ReadCRSpecFromEnvYaml()
 	if err == nil {
 		t.Fail()
 	}
 	setup(t)
-	cfg, err := ReadCRConfigFromEnvYaml()
+	cfg, err := ReadCRSpecFromEnvYaml()
 	if err != nil {
 		t.Fatalf("error reading config from env")
 	}

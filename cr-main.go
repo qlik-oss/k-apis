@@ -19,7 +19,7 @@ const (
 	backupConfigMapName = "qliksense-operator-state-backup"
 )
 
-func GeneratePatches(cr *config.CRConfig) {
+func GeneratePatches(cr *config.CRSpec) {
 	if cr.Git.Repository == "" {
 		createPatches(cr)
 	} else {
@@ -28,7 +28,7 @@ func GeneratePatches(cr *config.CRConfig) {
 	}
 }
 
-func createPatches(cr *config.CRConfig) {
+func createPatches(cr *config.CRSpec) {
 	// process cr.storageClassName
 	if cr.StorageClassName != "" {
 		qust.ProcessStorageClassName(cr)
@@ -39,9 +39,9 @@ func createPatches(cr *config.CRConfig) {
 	qust.ProcessNamespace(cr)
 
 	// Process cr.configs
-	qust.ProcessCrConfigs(cr)
+	qust.ProcessConfigs(cr)
 	// Process cr.secrets
-	qust.ProcessCrSecrets(cr)
+	qust.ProcessSecrets(cr)
 
 	switch cr.RotateKeys {
 	case "yes":
@@ -54,7 +54,7 @@ func createPatches(cr *config.CRConfig) {
 	}
 }
 
-func generateKeys(cr *config.CRConfig, defaultKeyDir string) {
+func generateKeys(cr *config.CRSpec, defaultKeyDir string) {
 	log.Println("rotating all keys")
 	keyDir := getEjsonKeyDir(defaultKeyDir)
 	if ejsonPublicKey, ejsonPrivateKey, err := ejson.GenerateKeypair(); err != nil {
@@ -76,7 +76,7 @@ func getEjsonKeyDir(defaultKeyDir string) string {
 	return ejsonKeyDir
 }
 
-func backupKeys(cr *config.CRConfig, defaultKeyDir string) {
+func backupKeys(cr *config.CRSpec, defaultKeyDir string) {
 	log.Println("backing up keys into the cluster")
 	if err := state.Backup(kubeConfigPath, backupConfigMapName, cr.NameSpace, []state.BackupDir{
 		{ConfigmapKey: "operator-keys", Directory: filepath.Join(cr.ManifestsRoot, ".operator/keys")},
@@ -86,7 +86,7 @@ func backupKeys(cr *config.CRConfig, defaultKeyDir string) {
 	}
 }
 
-func restoreKeys(cr *config.CRConfig, defaultKeyDir string) {
+func restoreKeys(cr *config.CRSpec, defaultKeyDir string) {
 	log.Println("restoring keys from the cluster")
 	if err := state.Restore(kubeConfigPath, backupConfigMapName, cr.NameSpace, []state.BackupDir{
 		{ConfigmapKey: "operator-keys", Directory: filepath.Join(cr.ManifestsRoot, ".operator/keys")},

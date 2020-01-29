@@ -9,7 +9,7 @@ import (
 	"sigs.k8s.io/kustomize/api/types"
 )
 
-func ProcessCrConfigs(cr *config.CRConfig) {
+func ProcessConfigs(cr *config.CRSpec) {
 	baseConfigDir := filepath.Join(cr.ManifestsRoot, operatorPatchBaseFolder, "configs")
 	if _, err := os.Stat(baseConfigDir); os.IsNotExist(err) {
 		log.Panic(baseConfigDir + " does not exist ")

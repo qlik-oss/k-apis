@@ -9,7 +9,7 @@ import (
 )
 
 // It will enable storageClassName transformer
-func ProcessStorageClassName(cr *config.CRConfig) error {
+func ProcessStorageClassName(cr *config.CRSpec) error {
 	if cr.StorageClassName == "" {
 		// no storage class defined
 		return nil

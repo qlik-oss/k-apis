@@ -4,11 +4,11 @@ import (
 	"sigs.k8s.io/kustomize/api/types"
 )
 
-// CRConfig defines the configuration for the whole manifests
+// CRSpec defines the configuration for the whole manifests
 // It is expecting in the manifestsRoot folder two subfolders .operator and .configuration exist
 // operator will add patch into .operator folder
 // customer will add patch into .configuration folder
-type CRConfig struct {
+type CRSpec struct {
 	// relative to manifestsRoot folder, ex. ./manifests/base
 	Profile          string                 `json:"profile" yaml:"profile"`
 	Secrets          map[string][]NameValue `json:"secrets,omitempty" yaml:"secrets,omitempty"`
