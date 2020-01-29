@@ -9,7 +9,7 @@ import (
 )
 
 // It will patch the built-in NamespaceTransformer
-func ProcessNamespace(cr *config.CRConfig) error {
+func ProcessNamespace(cr *config.CRSpec) error {
 	if cr.NameSpace == "" {
 		// no namespace provided so default should work
 		return nil

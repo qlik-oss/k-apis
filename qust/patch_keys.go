@@ -24,7 +24,7 @@ type serviceT struct {
 	JWKS       string
 }
 
-func GenerateKeys(cr *config.CRConfig, ejsonPublicKey string) error {
+func GenerateKeys(cr *config.CRSpec, ejsonPublicKey string) error {
 	serviceList, err := initServiceList(cr)
 	if err != nil {
 		return err
@@ -44,7 +44,7 @@ func GenerateKeys(cr *config.CRConfig, ejsonPublicKey string) error {
 	return nil
 }
 
-func initServiceList(cr *config.CRConfig) ([]*serviceT, error) {
+func initServiceList(cr *config.CRSpec) ([]*serviceT, error) {
 	prePatchedSecretsDirPath := filepath.Join(cr.ManifestsRoot, operatorPatchBaseFolder,
 		operatorKeysBaseFolder, "secrets")
 
@@ -65,7 +65,7 @@ func initServiceList(cr *config.CRConfig) ([]*serviceT, error) {
 	return append(serviceList[:0], serviceList[0+1:]...), nil
 }
 
-func overrideServiceEpriviteKeyJsonFile(cr *config.CRConfig, service *serviceT, ejsonPublicKey string) error {
+func overrideServiceEpriviteKeyJsonFile(cr *config.CRSpec, service *serviceT, ejsonPublicKey string) error {
 	ePriviteKeyMap := make(map[string]string)
 	ePriviteKeyMap["_public_key"] = ejsonPublicKey
 	ePriviteKeyMap["private_key"] = service.PrivateKey
@@ -78,7 +78,7 @@ func overrideServiceEpriviteKeyJsonFile(cr *config.CRConfig, service *serviceT, 
 	return nil
 }
 
-func overrideKeysEjwksJsonFile(cr *config.CRConfig, services []*serviceT, ejsonPublicKey string) error {
+func overrideKeysEjwksJsonFile(cr *config.CRSpec, services []*serviceT, ejsonPublicKey string) error {
 	eJwksMap := make(map[string]string)
 	eJwksMap["_public_key"] = ejsonPublicKey
 	for _, service := range services {
@@ -104,7 +104,7 @@ func writeToEjsonFile(eJwksMap map[string]string, filePath string) error {
 	return nil
 }
 
-func overrideKeysSelectivePatchYamlFile(cr *config.CRConfig, services []*serviceT) error {
+func overrideKeysSelectivePatchYamlFile(cr *config.CRSpec, services []*serviceT) error {
 	filePath := filepath.Join(cr.ManifestsRoot, operatorPatchBaseFolder,
 		operatorKeysBaseFolder, "configs/keys/selectivepatch.yaml")
 	if selectivePatchYamlBytes, err := ioutil.ReadFile(filePath); err != nil {

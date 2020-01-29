@@ -9,7 +9,7 @@ import (
 	"sigs.k8s.io/kustomize/api/types"
 )
 
-func ProcessCrConfigs(cr *config.CRConfig) {
+func ProcessConfigs(cr *config.CRSpec) {
 	baseConfigDir := filepath.Join(cr.ManifestsRoot, operatorPatchBaseFolder, "configs")
 	if _, err := os.Stat(baseConfigDir); os.IsNotExist(err) {
 		log.Panic(baseConfigDir + " does not exist ")
@@ -27,7 +27,7 @@ func ProcessCrConfigs(cr *config.CRConfig) {
 }
 
 // create a selectivepatch map for each service for a dataKey
-func createSupperConfigSelectivePatch(confg map[string][]config.NameValue) map[string]*config.SelectivePatch {
+func createSupperConfigSelectivePatch(confg map[string]config.NameValues) map[string]*config.SelectivePatch {
 	spMap := make(map[string]*config.SelectivePatch)
 	for svc, data := range confg {
 		sp := getSuperConfigSPTemplate(svc)

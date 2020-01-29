@@ -12,7 +12,7 @@ import (
 
 func TestCreateSupperSecretSelectivePatch(t *testing.T) {
 	reader := setupCr(t)
-	cfg, err := config.ReadCRConfigFromFile(reader)
+	cfg, err := config.ReadCRSpecFromFile(reader)
 	if err != nil {
 		t.Fatalf("error reading config from file")
 	}
@@ -52,7 +52,7 @@ func TestCreateSupperSecretSelectivePatch(t *testing.T) {
 
 func TestProcessCrSecrets(t *testing.T) {
 	reader := setupCr(t)
-	cfg, err := config.ReadCRConfigFromFile(reader)
+	cfg, err := config.ReadCRSpecFromFile(reader)
 	if err != nil {
 		t.Fatalf("error reading config from file")
 	}
@@ -60,7 +60,7 @@ func TestProcessCrSecrets(t *testing.T) {
 	td, dir := createManifestsStructure(t)
 
 	cfg.ManifestsRoot = dir
-	ProcessCrSecrets(cfg)
+	ProcessSecrets(cfg)
 	content, _ := ioutil.ReadFile(filepath.Join(dir, ".operator", "secrets", "qliksense.yaml"))
 
 	sp := getSuperSecretSPTemplate("qliksense")
