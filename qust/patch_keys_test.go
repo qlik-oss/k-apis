@@ -120,7 +120,7 @@ func TestInitServiceList(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if services, err := initServiceList(&config.CRConfig{ManifestsRoot: dir}); err != nil {
+	if services, err := initServiceList(&config.CRSpec{ManifestsRoot: dir}); err != nil {
 		t.Fatal(err)
 	} else {
 		assert.Equal(t, []*serviceT{{Name: "bar"}, {Name: "foo"}}, services)

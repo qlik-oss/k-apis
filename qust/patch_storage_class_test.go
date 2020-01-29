@@ -11,7 +11,7 @@ import (
 func TestProcessStorageClassName(t *testing.T) {
 	// create CR
 	reader := setupCr(t)
-	cfg, err := config.ReadCRConfigFromFile(reader)
+	cfg, err := config.ReadCRSpecFromFile(reader)
 	if err != nil {
 		t.Fatalf("error reading config from file")
 	}
