@@ -9,7 +9,7 @@ import (
 	"sigs.k8s.io/kustomize/api/types"
 )
 
-func ProcessCrSecrets(cr *config.CRSpec) {
+func ProcessSecrets(cr *config.CRSpec) {
 	baseSecretDir := filepath.Join(cr.ManifestsRoot, operatorPatchBaseFolder, "secrets")
 	if _, err := os.Stat(baseSecretDir); os.IsNotExist(err) {
 		log.Panic(baseSecretDir + " does not exist ")
@@ -27,7 +27,7 @@ func ProcessCrSecrets(cr *config.CRSpec) {
 }
 
 // create a selectivepatch map for each service for a secretKey
-func createSupperSecretSelectivePatch(sec map[string][]config.NameValue) map[string]*config.SelectivePatch {
+func createSupperSecretSelectivePatch(sec map[string]config.NameValues) map[string]*config.SelectivePatch {
 	spMap := make(map[string]*config.SelectivePatch)
 	for svc, data := range sec {
 		sp := getSuperSecretSPTemplate(svc)

@@ -60,7 +60,7 @@ func TestProcessCrSecrets(t *testing.T) {
 	td, dir := createManifestsStructure(t)
 
 	cfg.ManifestsRoot = dir
-	ProcessCrSecrets(cfg)
+	ProcessSecrets(cfg)
 	content, _ := ioutil.ReadFile(filepath.Join(dir, ".operator", "secrets", "qliksense.yaml"))
 
 	sp := getSuperSecretSPTemplate("qliksense")
