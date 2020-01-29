@@ -24,7 +24,18 @@ jobs:
       # specify any bash command here prefixed with `run: `
       - run: go get -v -t -d ./...
       - run: go test -v ./...
-  
+  release:
+    docker:
+      - image: circleci/golang:1.13
+    working_directory: /go/src/github.com/qlik-oss/k-apis
+    steps:
+      - checkout
+      - run:
+          name: "Publish Release"
+          tag: /(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)/
+          command: |
+            go get github.com/tcnksm/ghr
+            ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace `git describe --tags` output/
 
 
 
@@ -36,4 +47,10 @@ workflows:
           filters:
             branches:
               only: sanat_circleci
+      - release:
+          filters:
+            branches:
+              only: sanat_circleci
+            tags:
+              only: /v.*/
       
