@@ -17,15 +17,30 @@ jobs:
     #### expecting it in the form of
     ####   /go/src/github.com/circleci/go-tool
     ####   /go/src/bitbucket.org/circleci/go-tool
+<<<<<<< HEAD
+    working_directory: /go/src/github.com/qlik-oss/k-apis
+=======
     working_directory: /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}}
+>>>>>>> master
     steps:
       - checkout
 
       # specify any bash command here prefixed with `run: `
       - run: go get -v -t -d ./...
+<<<<<<< HEAD
       - run: go test -v ./...
+
+
+
 workflows:
   version: 2
-  test:
+  workflow1:
     jobs:
-      - test
+      - test:
+          filters:
+            branches:
+              only: master
+    
+=======
+      - run: go test -v ./...
+>>>>>>> master
