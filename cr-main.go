@@ -8,19 +8,13 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"time"
 
 	"github.com/Shopify/ejson"
-	"github.com/google/go-github/github"
 	"github.com/qlik-oss/k-apis/config"
 	"github.com/qlik-oss/k-apis/qust"
 	"github.com/qlik-oss/k-apis/state"
-	"golang.org/x/oauth2"
-
+	"github.com/qlik-oss/k-apis/utils"
 	"gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing"
-	"gopkg.in/src-d/go-git.v4/plumbing/object"
-	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
 )
 
 const (
@@ -33,104 +27,49 @@ func GeneratePatches(cr *config.CRSpec) {
 	if cr.Git.Repository == "" {
 		createPatches(cr)
 	} else {
-		log.Println("Download from git repo and then call createPatches")
-
-		//Open Git Repositorty
-		r, err := git.PlainOpen(cr.Git.Repository)
+		var r *git.Repository
+		if _, err := os.Stat(cr.ManifestsRoot); os.IsNotExist(err) {
+			r, err = utils.CloneRepository(cr)
+			if err != nil {
+				log.Printf("error cloning repository %s: %v\n", cr.Git.Repository, err)
+				return
+			}
+		} else {
+			r, err = utils.OpenRepository(cr)
+			if err != nil {
+				log.Printf("error opening repository %s: %v\n", cr.Git.Repository, err)
+				return
+			}
+		}
+		w, err := utils.ConfigureWorkTree(r)
 		if err != nil {
-			log.Printf("error opening repository: %v\n", err)
+			log.Printf("error configuring working tree: %v\n", err)
+		}
+
+		b, err := utils.CreateBranch(w)
+		if err != nil {
+			log.Printf("error setting reference to new branch: %v\n", err)
+		}
+
+		createPatches(cr)
+
+		err = utils.AddCommit(cr, w)
+		if err != nil {
+			log.Printf("error adding commit: %v\n", err)
 			return
 		}
-		w, err := r.Worktree()
+
+		err = utils.Push(cr, r)
 		if err != nil {
-			log.Printf("error getting working tree: %v\n", err)
+			log.Printf("error pushing to %s: %v\n", cr.Git.Repository, err)
 			return
 		}
 
-		err = w.Checkout(&git.CheckoutOptions{
-			Branch: "refs/heads/master",
-			Force:  true,
-		})
+		err = utils.CreatePR(cr, b)
 		if err != nil {
-			log.Printf("error setting reference to new branch: %v\n", err)
+			log.Printf("error creating pr against %s: %v\n", cr.Git.Repository, err)
+
 		}
-
-		err = w.Pull(&git.PullOptions{RemoteName: "origin"})
-		if err != git.NoErrAlreadyUpToDate && err != nil {
-			log.Printf("error pulling working tree: %v\n", err)
-		}
-		headRef, err := r.Head()
-		if err != nil {
-			log.Printf("error setting head: %v\n", err)
-		}
-
-		reference := plumbing.NewBranchReferenceName(
-			fmt.Sprintf("refs/heads/pr-branch-%s", tokenGenerator()),
-		)
-		fmt.Println(reference)
-		ref := plumbing.NewHashReference(reference, headRef.Hash())
-
-		err = r.Storer.SetReference(ref)
-		if err != nil {
-			log.Printf("error setting reference to new branch: %v\n", err)
-		}
-		err = w.Checkout(&git.CheckoutOptions{
-			Branch: ref.Name(),
-			Force:  true,
-		})
-		if err != nil {
-			log.Printf("error setting reference to new branch: %v\n", err)
-		}
-		makePrWithPatches(cr, r, w, ref.Name())
-	}
-}
-
-func makePrWithPatches(cr *config.CRConfig, r *git.Repository, w *git.Worktree, branch plumbing.ReferenceName) {
-
-	//createPatches(cr)
-
-	filename := filepath.Join(cr.Git.Repository, "example-git-file")
-	err := ioutil.WriteFile(filename, []byte("hello world5!"), 0644)
-
-	_, err = w.Add(".")
-
-	_, err = w.Commit("k-apis pr", &git.CommitOptions{
-		Author: &object.Signature{
-			Name: cr.Git.UserName,
-			When: time.Now(),
-		},
-	})
-
-	err = r.Push(&git.PushOptions{
-		Auth: &http.BasicAuth{
-			Username: cr.Git.UserName,
-			Password: cr.Git.Password,
-		},
-	})
-	if err != nil {
-		log.Printf("error creating push: %v\n", err)
-		return
-	}
-
-	ctx := context.Background()
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: cr.Git.AccessToken},
-	)
-	tc := oauth2.NewClient(ctx, ts)
-	client := github.NewClient(tc)
-
-	newPR := &github.NewPullRequest{
-		Title:               github.String("k-apis PR"),
-		Head:                github.String(branch.String()),
-		Base:                github.String("master"),
-		Body:                github.String("auto generated pr"),
-		MaintainerCanModify: github.Bool(true),
-	}
-
-	_, _, err = client.PullRequests.Create(context.Background(), cr.Git.UserName, "golang-server", newPR)
-	if err != nil {
-		log.Printf("error creating pr: %v\n", err)
-		return
 	}
 }
 
