@@ -1,8 +1,6 @@
 package cr
 
 import (
-	"context"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
