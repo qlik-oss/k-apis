@@ -17,7 +17,7 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
 )
 
-func CreatePR(cr *config.CRConfig, branch plumbing.ReferenceName) error {
+func CreatePR(cr *config.CRSpec, branch plumbing.ReferenceName) error {
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: cr.Git.AccessToken},
@@ -40,7 +40,7 @@ func CreatePR(cr *config.CRConfig, branch plumbing.ReferenceName) error {
 	return nil
 }
 
-func CloneRepository(cr *config.CRConfig) (*git.Repository, error) {
+func CloneRepository(cr *config.CRSpec) (*git.Repository, error) {
 	r, err := git.PlainClone(cr.ManifestsRoot, false, &git.CloneOptions{
 		Auth: &http.BasicAuth{
 			Username: cr.Git.UserName,
@@ -55,7 +55,7 @@ func CloneRepository(cr *config.CRConfig) (*git.Repository, error) {
 
 }
 
-func OpenRepository(cr *config.CRConfig) (*git.Repository, error) {
+func OpenRepository(cr *config.CRSpec) (*git.Repository, error) {
 	r, err := git.PlainOpen(cr.ManifestsRoot)
 	if err != nil {
 		return nil, err
@@ -100,7 +100,7 @@ func CreateBranch(w *git.Worktree) (plumbing.ReferenceName, error) {
 	return b, nil
 }
 
-func AddCommit(cr *config.CRConfig, w *git.Worktree) error {
+func AddCommit(cr *config.CRSpec, w *git.Worktree) error {
 	_, err := w.Add(".")
 	if err != nil {
 		return err
@@ -118,7 +118,7 @@ func AddCommit(cr *config.CRConfig, w *git.Worktree) error {
 	return nil
 }
 
-func Push(cr *config.CRConfig, r *git.Repository) error {
+func Push(cr *config.CRSpec, r *git.Repository) error {
 	err := r.Push(&git.PushOptions{
 		Auth: &http.BasicAuth{
 			Username: cr.Git.UserName,

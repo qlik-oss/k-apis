@@ -10,7 +10,7 @@ import (
 	"gopkg.in/src-d/go-git.v4"
 )
 
-var testCR = &config.CRConfig{
+var testCR = &config.CRSpec{
 	Git: config.Repo{
 		Repository: "https://github.com/git-fixtures/basic.git",
 		UserName:   "username",
