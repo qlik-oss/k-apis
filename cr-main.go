@@ -1,8 +1,6 @@
 package cr
 
 import (
-	"crypto/rand"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -22,16 +20,6 @@ const (
 	kubeConfigPath      = "/root/.kube/config"
 	backupConfigMapName = "qliksense-operator-state-backup"
 )
-
-var (
-	goPath = os.Getenv("GOPATH")
-)
-
-func tokenGenerator() string {
-	b := make([]byte, 4)
-	rand.Read(b)
-	return fmt.Sprintf("%x", b)
-}
 
 func GeneratePatches(cr *config.CRConfig) {
 	if cr.Git.Repository == "" {
