@@ -1,8 +1,6 @@
 package cr
 
 import (
-	"crypto/rand"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
