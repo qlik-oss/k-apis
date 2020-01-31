@@ -1,7 +1,6 @@
 package cr
 
 import (
-	"context"
 	"crypto/rand"
 	"fmt"
 	"io/ioutil"
@@ -9,10 +8,8 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"time"
 
 	"github.com/Shopify/ejson"
-	"github.com/google/go-github/github"
 	"github.com/qlik-oss/k-apis/config"
 	"github.com/qlik-oss/k-apis/qust"
 	"github.com/qlik-oss/k-apis/state"
