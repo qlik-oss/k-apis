@@ -10,7 +10,7 @@ import (
 )
 
 func ProcessSecrets(cr *config.CRSpec) {
-	baseSecretDir := filepath.Join(cr.ManifestsRoot, operatorPatchBaseFolder, "secrets")
+	baseSecretDir := filepath.Join(cr.GetManifestsRoot(), operatorPatchBaseFolder, "secrets")
 	if _, err := os.Stat(baseSecretDir); os.IsNotExist(err) {
 		log.Panic(baseSecretDir + " does not exist ")
 	}

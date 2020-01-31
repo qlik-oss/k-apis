@@ -10,7 +10,7 @@ import (
 )
 
 func ProcessConfigs(cr *config.CRSpec) {
-	baseConfigDir := filepath.Join(cr.ManifestsRoot, operatorPatchBaseFolder, "configs")
+	baseConfigDir := filepath.Join(cr.GetManifestsRoot(), operatorPatchBaseFolder, "configs")
 	if _, err := os.Stat(baseConfigDir); os.IsNotExist(err) {
 		log.Panic(baseConfigDir + " does not exist ")
 	}

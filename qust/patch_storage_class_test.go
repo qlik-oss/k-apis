@@ -17,9 +17,9 @@ func TestProcessStorageClassName(t *testing.T) {
 	}
 	// create manifests structure
 	td, dir := createManifestsStructure(t)
-	cfg.ManifestsRoot = dir
+	cfg.ManifestsRoot = filepath.Join(dir, "manifests")
 
-	storageClassFileName := filepath.Join(cfg.ManifestsRoot, operatorPatchBaseFolder, "transformers", "storage-class.yaml")
+	storageClassFileName := filepath.Join(cfg.GetManifestsRoot(), operatorPatchBaseFolder, "transformers", "storage-class.yaml")
 
 	oldCount := strings.Count(getStorageFileContent(storageClassFileName, t), "value: false")
 	if oldCount <= 0 {

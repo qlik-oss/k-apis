@@ -45,7 +45,7 @@ func GenerateKeys(cr *config.CRSpec, ejsonPublicKey string) error {
 }
 
 func initServiceList(cr *config.CRSpec) ([]*serviceT, error) {
-	prePatchedSecretsDirPath := filepath.Join(cr.ManifestsRoot, operatorPatchBaseFolder,
+	prePatchedSecretsDirPath := filepath.Join(cr.GetManifestsRoot(), operatorPatchBaseFolder,
 		operatorKeysBaseFolder, "secrets")
 
 	var serviceList []*serviceT
@@ -71,7 +71,7 @@ func overrideServiceEpriviteKeyJsonFile(cr *config.CRSpec, service *serviceT, ej
 	ePriviteKeyMap["private_key"] = service.PrivateKey
 	ePriviteKeyMap["kid"] = service.Kid
 
-	if err := writeToEjsonFile(ePriviteKeyMap, filepath.Join(cr.ManifestsRoot, operatorPatchBaseFolder,
+	if err := writeToEjsonFile(ePriviteKeyMap, filepath.Join(cr.GetManifestsRoot(), operatorPatchBaseFolder,
 		operatorKeysBaseFolder, "secrets", service.Name, "eprivate_key.json")); err != nil {
 		return err
 	}
@@ -85,7 +85,7 @@ func overrideKeysEjwksJsonFile(cr *config.CRSpec, services []*serviceT, ejsonPub
 		eJwksMap[service.Name] = base64.StdEncoding.EncodeToString([]byte(service.JWKS))
 	}
 
-	if err := writeToEjsonFile(eJwksMap, filepath.Join(cr.ManifestsRoot, operatorPatchBaseFolder,
+	if err := writeToEjsonFile(eJwksMap, filepath.Join(cr.GetManifestsRoot(), operatorPatchBaseFolder,
 		operatorKeysBaseFolder, "configs/keys/ejwks.json")); err != nil {
 		return err
 	}
@@ -105,7 +105,7 @@ func writeToEjsonFile(eJwksMap map[string]string, filePath string) error {
 }
 
 func overrideKeysSelectivePatchYamlFile(cr *config.CRSpec, services []*serviceT) error {
-	filePath := filepath.Join(cr.ManifestsRoot, operatorPatchBaseFolder,
+	filePath := filepath.Join(cr.GetManifestsRoot(), operatorPatchBaseFolder,
 		operatorKeysBaseFolder, "configs/keys/selectivepatch.yaml")
 	if selectivePatchYamlBytes, err := ioutil.ReadFile(filePath); err != nil {
 		return err
