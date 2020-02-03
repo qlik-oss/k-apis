@@ -16,7 +16,7 @@ func ProcessNamespace(cr *config.CRSpec) error {
 	}
 	namespacePatchFileName := "namespace-" + cr.NameSpace + ".yaml"
 
-	fileFullPath := filepath.Join(cr.ManifestsRoot, operatorPatchBaseFolder, "transformers", namespacePatchFileName)
+	fileFullPath := filepath.Join(cr.GetManifestsRoot(), operatorPatchBaseFolder, "transformers", namespacePatchFileName)
 	fileContents := strings.Replace(namespacePatchTemplate(), "NAMESPACE_NAME", cr.NameSpace, 1)
 
 	err := ioutil.WriteFile(fileFullPath, []byte(fileContents), FILE_PERMISION)
@@ -26,7 +26,7 @@ func ProcessNamespace(cr *config.CRSpec) error {
 		return err
 	}
 	// add that file to kustomization.yaml
-	fileFullPath = filepath.Join(cr.ManifestsRoot, operatorPatchBaseFolder, "transformers", "kustomization.yaml")
+	fileFullPath = filepath.Join(cr.GetManifestsRoot(), operatorPatchBaseFolder, "transformers", "kustomization.yaml")
 	err = addResourceToKustomization(namespacePatchFileName, fileFullPath)
 	if err != nil {
 		log.Panic("Cannot add resource to "+fileFullPath, err)

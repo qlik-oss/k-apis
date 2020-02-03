@@ -14,7 +14,7 @@ func ProcessStorageClassName(cr *config.CRSpec) error {
 		// no storage class defined
 		return nil
 	}
-	storageClassFileName := filepath.Join(cr.ManifestsRoot, operatorPatchBaseFolder, "transformers", "storage-class.yaml")
+	storageClassFileName := filepath.Join(cr.GetManifestsRoot(), operatorPatchBaseFolder, "transformers", "storage-class.yaml")
 	if _, err := os.Stat(storageClassFileName); os.IsNotExist(err) {
 		log.Panic(storageClassFileName + " does not exist ")
 		return err

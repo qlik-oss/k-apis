@@ -35,8 +35,8 @@ resources:
 func setupCr(t *testing.T) io.Reader {
 	t.Parallel()
 	sampleConfig := `
-profile: manifests/base
-manifestsRoot: "."
+profile: base
+manifestsRoot: "./manifests"
 storageClassName: "efs"
 configs:
   qliksense:

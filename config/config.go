@@ -2,13 +2,14 @@ package config
 
 import (
 	"errors"
-	"github.com/jinzhu/copier"
-	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"strings"
+
+	"github.com/jinzhu/copier"
+	"gopkg.in/yaml.v2"
 )
 
 // ReadCRSpecFromFile return CR config from yaml file
@@ -83,4 +84,10 @@ func (in *CRSpec) DeepCopy() *CRSpec {
 	out := new(CRSpec)
 	in.DeepCopyInto(out)
 	return out
+}
+
+func (cr *CRSpec) GetManifestsRoot() string {
+	// /cnab/root/manifest
+	return strings.TrimSuffix(cr.ManifestsRoot, "/manifests")
+	// return /cnab/root
 }
