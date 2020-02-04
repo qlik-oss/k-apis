@@ -1,11 +1,12 @@
 package qust
 
 import (
-	"github.com/qlik-oss/k-apis/config"
 	"io/ioutil"
 	"log"
 	"path/filepath"
 	"strings"
+
+	"github.com/qlik-oss/k-apis/pkg/config"
 )
 
 // It will patch the built-in NamespaceTransformer

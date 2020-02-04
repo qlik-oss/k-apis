@@ -2,10 +2,11 @@ package qust
 
 import (
 	"errors"
-	"github.com/qlik-oss/k-apis/config"
-	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
+
+	"github.com/qlik-oss/k-apis/pkg/config"
+	"gopkg.in/yaml.v2"
 
 	"sigs.k8s.io/kustomize/api/resid"
 	"sigs.k8s.io/kustomize/api/types"

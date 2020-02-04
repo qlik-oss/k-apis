@@ -1,10 +1,17 @@
 package git
 
 import (
+	"context"
+	"crypto/rand"
 	"fmt"
+	"path/filepath"
+	"time"
 
+	"github.com/google/go-github/github"
+	"golang.org/x/oauth2"
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
+	"gopkg.in/src-d/go-git.v4/plumbing/object"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport"
 )
 
@@ -20,7 +27,7 @@ func OpenRepository(path string) (*git.Repository, error) {
 	return git.PlainOpen(path)
 }
 
-func Checkout(r *git.Repository, ref string, toBranch string, auth transport.AuthMethod) error {
+func Checkout(r *git.Repository, ref string, toBranch plumbing.ReferenceName, auth transport.AuthMethod) error {
 	if hash, err := resolveRevision(r, ref, auth); err != nil {
 		return err
 	} else if workTree, err := r.Worktree(); err != nil {
@@ -33,6 +40,38 @@ func Checkout(r *git.Repository, ref string, toBranch string, auth transport.Aut
 		return err
 	}
 
+	return nil
+}
+
+func AddCommit(r *git.Repository, author string) error {
+	workTree, err := r.Worktree()
+	if err != nil {
+		return err
+	}
+	_, err = workTree.Add(".")
+	if err != nil {
+		return err
+	}
+
+	_, err = workTree.Commit("k-apis pr", &git.CommitOptions{
+		Author: &object.Signature{
+			Name: author,
+			When: time.Now(),
+		},
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func Push(r *git.Repository, auth transport.AuthMethod) error {
+	err := r.Push(&git.PushOptions{
+		Auth: auth,
+	})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -72,76 +111,31 @@ func resolveRemoteTagOrBranch(r *git.Repository, findRef string, auth transport.
 	}
 }
 
-//func ConfigureWorkTree(r *git.Repository) (*git.Worktree, error) {
-//	w, err := r.Worktree()
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	err = w.Checkout(&git.CheckoutOptions{
-//		Branch: "refs/heads/master",
-//		Force:  true,
-//	})
-//	if err != nil {
-//		return nil, err
-//	}
-//	err = w.Pull(&git.PullOptions{RemoteName: "origin"})
-//	if err != git.NoErrAlreadyUpToDate && err != nil {
-//		return nil, err
-//	}
-//	return w, nil
-//}
-//
-//func CreateBranch(w *git.Worktree) (plumbing.ReferenceName, error) {
-//	reference := plumbing.NewBranchReferenceName(
-//		fmt.Sprintf("pr-branch-%s", tokenGenerator()),
-//	)
-//	b := plumbing.ReferenceName(reference)
-//
-//	err := w.Checkout(&git.CheckoutOptions{Create: false, Force: false, Branch: b})
-//
-//	if err != nil {
-//		err := w.Checkout(&git.CheckoutOptions{Create: true, Force: false, Branch: b})
-//		if err != git.NoErrAlreadyUpToDate && err != nil {
-//			return "", err
-//		}
-//	}
-//	return b, nil
-//}
-//
-//func AddCommit(cr *config.CRSpec, w *git.Worktree) error {
-//	_, err := w.Add(".")
-//	if err != nil {
-//		return err
-//	}
-//
-//	_, err = w.Commit("k-apis pr", &git.CommitOptions{
-//		Author: &object.Signature{
-//			Name: cr.Git.UserName,
-//			When: time.Now(),
-//		},
-//	})
-//	if err != nil {
-//		return err
-//	}
-//	return nil
-//}
-//
-//func Push(cr *config.CRSpec, r *git.Repository) error {
-//	err := r.Push(&git.PushOptions{
-//		Auth: &http.BasicAuth{
-//			Username: cr.Git.UserName,
-//			Password: cr.Git.Password,
-//		},
-//	})
-//	if err != nil {
-//		return err
-//	}
-//	return nil
-//}
-//
-//func tokenGenerator() string {
-//	b := make([]byte, 4)
-//	rand.Read(b)
-//	return fmt.Sprintf("%x", b)
-//}
+func CreatePR(path string, token string, username string, branch string) error {
+	ctx := context.Background()
+	ts := oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: token},
+	)
+	tc := oauth2.NewClient(ctx, ts)
+	client := github.NewClient(tc)
+
+	newPR := &github.NewPullRequest{
+		Title:               github.String("k-apis PR"),
+		Head:                github.String(branch),
+		Base:                github.String("master"),
+		Body:                github.String("auto generated pr"),
+		MaintainerCanModify: github.Bool(true),
+	}
+
+	_, _, err := client.PullRequests.Create(context.Background(), username, filepath.Base(path), newPR)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func TokenGenerator() string {
+	b := make([]byte, 4)
+	rand.Read(b)
+	return fmt.Sprintf("%x", b)
+}

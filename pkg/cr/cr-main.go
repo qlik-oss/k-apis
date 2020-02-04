@@ -1,6 +1,7 @@
 package cr
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -8,9 +9,14 @@ import (
 	"path/filepath"
 
 	"github.com/Shopify/ejson"
-	"github.com/qlik-oss/k-apis/config"
-	"github.com/qlik-oss/k-apis/qust"
-	"github.com/qlik-oss/k-apis/state"
+	"github.com/qlik-oss/k-apis/pkg/config"
+	crGit "github.com/qlik-oss/k-apis/pkg/git"
+	"github.com/qlik-oss/k-apis/pkg/qust"
+	"github.com/qlik-oss/k-apis/pkg/state"
+	"gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4/plumbing"
+	"gopkg.in/src-d/go-git.v4/plumbing/transport"
+	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
 )
 
 const (
@@ -23,8 +29,65 @@ func GeneratePatches(cr *config.CRSpec) {
 	if cr.Git.Repository == "" {
 		createPatches(cr)
 	} else {
-		// TODO: add git pull functionality
-		log.Println("Download from git repo and then call createPatches")
+		var r *git.Repository
+		var auth transport.AuthMethod
+		if cr.Git.UserName != "" && cr.Git.Password != "" {
+			auth = &http.BasicAuth{
+				Username: cr.Git.UserName,
+				Password: cr.Git.Password,
+			}
+		}
+
+		// Clone or open
+		if _, err := os.Stat(cr.GetManifestsRoot()); os.IsNotExist(err) {
+			r, err = crGit.CloneRepository(cr.GetManifestsRoot(), cr.Git.Repository, auth)
+			if err != nil {
+				log.Printf("error cloning repository %s: %v\n", cr.Git.Repository, err)
+				return
+			}
+		} else {
+			r, err = crGit.OpenRepository(cr.GetManifestsRoot())
+			if err != nil {
+				log.Printf("error opening repository %s: %v\n", cr.Git.Repository, err)
+				return
+			}
+		}
+		//set reference to head
+		headRef, err := r.Head()
+		if err != nil {
+			log.Printf("error seeting reference: %v\n", err)
+			return
+		}
+
+		reference := plumbing.NewBranchReferenceName(
+			fmt.Sprintf("pr-branch-%s", crGit.TokenGenerator()),
+		)
+		toBranch := plumbing.ReferenceName(reference)
+		//checkout to new branch
+		err = crGit.Checkout(r, headRef.Hash().String(), toBranch, auth)
+		if err != nil {
+			log.Printf("error checking out to %s: %v\n", toBranch.String(), err)
+		}
+
+		createPatches(cr)
+		//commit patches
+		err = crGit.AddCommit(r, cr.Git.UserName)
+		if err != nil {
+			log.Printf("error adding commit: %v\n", err)
+			return
+		}
+		//push patches
+		err = crGit.Push(r, auth)
+		if err != nil {
+			log.Printf("error pushing to %s: %v\n", cr.Git.Repository, err)
+			return
+		}
+		//create pr
+		err = crGit.CreatePR(cr.GetManifestsRoot(), cr.Git.AccessToken, cr.Git.UserName, toBranch.String())
+		if err != nil {
+			log.Printf("error creating pr against %s: %v\n", cr.Git.Repository, err)
+
+		}
 	}
 }
 

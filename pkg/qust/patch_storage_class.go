@@ -1,11 +1,12 @@
 package qust
 
 import (
-	"github.com/qlik-oss/k-apis/config"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
+
+	"github.com/qlik-oss/k-apis/pkg/config"
 )
 
 // It will enable storageClassName transformer

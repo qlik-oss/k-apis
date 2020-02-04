@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 
 	"github.com/Shopify/ejson"
-	"github.com/qlik-oss/k-apis/config"
-	"github.com/qlik-oss/k-apis/keys"
+	"github.com/qlik-oss/k-apis/pkg/config"
+	"github.com/qlik-oss/k-apis/pkg/keys"
 	"gopkg.in/yaml.v2"
 )
 
