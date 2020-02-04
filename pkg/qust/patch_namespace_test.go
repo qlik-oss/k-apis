@@ -1,11 +1,12 @@
 package qust
 
 import (
-	"github.com/qlik-oss/k-apis/config"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/qlik-oss/k-apis/pkg/config"
 )
 
 func TestProcessNamespace(t *testing.T) {

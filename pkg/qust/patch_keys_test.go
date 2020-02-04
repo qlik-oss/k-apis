@@ -7,7 +7,7 @@ import (
 	"path"
 	"testing"
 
-	"github.com/qlik-oss/k-apis/config"
+	"github.com/qlik-oss/k-apis/pkg/config"
 	"github.com/stretchr/testify/assert"
 )
 

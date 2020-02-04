@@ -1,13 +1,14 @@
 package qust
 
 import (
-	"github.com/qlik-oss/k-apis/config"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"path/filepath"
 	"reflect"
-	"sigs.k8s.io/kustomize/api/types"
 	"testing"
+
+	"github.com/qlik-oss/k-apis/pkg/config"
+	"gopkg.in/yaml.v2"
+	"sigs.k8s.io/kustomize/api/types"
 )
 
 func TestCreateSupperSecretSelectivePatch(t *testing.T) {
