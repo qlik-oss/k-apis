@@ -7,6 +7,7 @@ require (
 	github.com/dustin/gojson v0.0.0-20160307161227-2e71ec9dd5ad // indirect
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v1.0.0 // indirect
+	github.com/hashicorp/go-getter v1.4.1
 	github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/mholt/archiver/v3 v3.3.0

@@ -1,14 +1,15 @@
 package qust
 
 import (
-	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"sigs.k8s.io/kustomize/api/types"
 	"strings"
 	"testing"
+
+	"gopkg.in/yaml.v2"
+	"sigs.k8s.io/kustomize/api/types"
 )
 
 const tempPermissionCode os.FileMode = 0777
