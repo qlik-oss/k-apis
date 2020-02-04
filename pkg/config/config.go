@@ -38,6 +38,9 @@ func ReadCRSpecFromEnvYaml() (*CRSpec, error) {
 }
 
 func (cr *CRSpec) AddToConfigs(svcName, name, value string) {
+	if cr.Configs == nil {
+		cr.Configs = make(map[string]NameValues)
+	}
 	if cr.Configs[svcName] == nil {
 		cr.Configs[svcName] = []NameValue{
 			{
@@ -56,6 +59,9 @@ func (cr *CRSpec) AddToConfigs(svcName, name, value string) {
 }
 
 func (cr *CRSpec) AddToSecrets(svcName, name, value string) {
+	if cr.Secrets == nil {
+		cr.Secrets = make(map[string]NameValues)
+	}
 	if cr.Secrets[svcName] == nil {
 		cr.Secrets[svcName] = []NameValue{
 			{
