@@ -20,13 +20,12 @@ import (
 
 const (
 	defaultEjsonKeydir  = "/opt/ejson/keys"
-	kubeConfigPath      = "/root/.kube/config"
 	backupConfigMapName = "qliksense-operator-state-backup"
 )
 
-func GeneratePatches(cr *config.CRSpec) {
+func GeneratePatches(cr *config.CRSpec, kubeConfigPath string) {
 	if cr.Git.Repository == "" {
-		createPatches(cr)
+		createPatches(cr, kubeConfigPath)
 	} else {
 		var r *git.Repository
 		var auth transport.AuthMethod
@@ -65,7 +64,7 @@ func GeneratePatches(cr *config.CRSpec) {
 			log.Printf("error checking out to %s: %v\n", toBranch, err)
 		}
 
-		createPatches(cr)
+		createPatches(cr, kubeConfigPath)
 		//commit patches
 		err = crGit.AddCommit(r, cr.Git.UserName)
 		if err != nil {
@@ -87,7 +86,7 @@ func GeneratePatches(cr *config.CRSpec) {
 	}
 }
 
-func createPatches(cr *config.CRSpec) {
+func createPatches(cr *config.CRSpec, kubeConfigPath string) {
 	// process cr.storageClassName
 	if cr.StorageClassName != "" {
 		qust.ProcessStorageClassName(cr)
@@ -105,11 +104,11 @@ func createPatches(cr *config.CRSpec) {
 	switch cr.RotateKeys {
 	case "yes":
 		generateKeys(cr, defaultEjsonKeydir)
-		backupKeys(cr, defaultEjsonKeydir)
+		backupKeys(cr, defaultEjsonKeydir, kubeConfigPath)
 	case "None":
 		log.Println("no keys operations, use default EJSON_KEY")
 	default:
-		restoreKeys(cr, defaultEjsonKeydir)
+		restoreKeys(cr, defaultEjsonKeydir, kubeConfigPath)
 	}
 }
 
@@ -135,7 +134,7 @@ func getEjsonKeyDir(defaultKeyDir string) string {
 	return ejsonKeyDir
 }
 
-func backupKeys(cr *config.CRSpec, defaultKeyDir string) {
+func backupKeys(cr *config.CRSpec, defaultKeyDir string, kubeConfigPath string) {
 	log.Println("backing up keys into the cluster")
 	if err := state.Backup(kubeConfigPath, backupConfigMapName, cr.NameSpace, []state.BackupDir{
 		{ConfigmapKey: "operator-keys", Directory: filepath.Join(cr.ManifestsRoot, ".operator/keys")},
@@ -145,7 +144,7 @@ func backupKeys(cr *config.CRSpec, defaultKeyDir string) {
 	}
 }
 
-func restoreKeys(cr *config.CRSpec, defaultKeyDir string) {
+func restoreKeys(cr *config.CRSpec, defaultKeyDir string, kubeConfigPath string) {
 	log.Println("restoring keys from the cluster")
 	if err := state.Restore(kubeConfigPath, backupConfigMapName, cr.NameSpace, []state.BackupDir{
 		{ConfigmapKey: "operator-keys", Directory: filepath.Join(cr.ManifestsRoot, ".operator/keys")},
