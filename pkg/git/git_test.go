@@ -48,7 +48,7 @@ func TestBranchOnCheckout(t *testing.T) {
 	} else if err := Checkout(repo, branchName, branchName, nil); err != nil {
 		t.Fatalf("error checking out gitRef: %v, error: %v", branchName, err)
 	} else {
-		fmt.Printf("successfully checked out gitRef: %v, cleaning up\n", branchName)
+		fmt.Printf("successfully checked out gitRef: %v\n", branchName)
 	}
 
 	cmd := exec.Command("git", "symbolic-ref", "--short", "-q", "HEAD")
@@ -57,5 +57,8 @@ func TestBranchOnCheckout(t *testing.T) {
 		t.Fatalf("error executing git command, error: %v", err)
 	} else if actualBranchName := strings.TrimSpace(string(out)); actualBranchName != branchName {
 		t.Fatalf("expected branch to be: %v, got: %v", branchName, actualBranchName)
+	} else {
+		fmt.Printf("successfully created branch: %v, cleaning up\n", branchName)
+		_ = os.RemoveAll(tmpDir)
 	}
 }
