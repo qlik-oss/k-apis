@@ -27,19 +27,27 @@ func OpenRepository(path string) (*git.Repository, error) {
 	return git.PlainOpen(path)
 }
 
-func Checkout(r *git.Repository, ref string, toBranch plumbing.ReferenceName, auth transport.AuthMethod) error {
-	if hash, err := resolveRevision(r, ref, auth); err != nil {
+func Checkout(r *git.Repository, ref string, toBranch string, auth transport.AuthMethod) error {
+	hash, err := resolveRevision(r, ref, auth)
+	if err != nil {
 		return err
-	} else if workTree, err := r.Worktree(); err != nil {
-		return err
-	} else if err := workTree.Checkout(&git.CheckoutOptions{
-		Hash:   *hash,
-		Branch: plumbing.ReferenceName(toBranch),
-		Create: toBranch != "",
-	}); err != nil {
+	}
+	workTree, err := r.Worktree()
+	if err != nil {
 		return err
 	}
 
+	checkoutOptions := &git.CheckoutOptions{
+		Hash: *hash,
+	}
+	if toBranch != "" {
+		checkoutOptions.Create = true
+		checkoutOptions.Branch = plumbing.NewBranchReferenceName(toBranch)
+	}
+
+	if err := workTree.Checkout(checkoutOptions); err != nil {
+		return err
+	}
 	return nil
 }
 

@@ -14,7 +14,6 @@ import (
 	"github.com/qlik-oss/k-apis/pkg/qust"
 	"github.com/qlik-oss/k-apis/pkg/state"
 	"gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
 )
@@ -59,14 +58,11 @@ func GeneratePatches(cr *config.CRSpec) {
 			return
 		}
 
-		reference := plumbing.NewBranchReferenceName(
-			fmt.Sprintf("pr-branch-%s", crGit.TokenGenerator()),
-		)
-		toBranch := plumbing.ReferenceName(reference)
+		toBranch := fmt.Sprintf("pr-branch-%s", crGit.TokenGenerator())
 		//checkout to new branch
 		err = crGit.Checkout(r, headRef.Hash().String(), toBranch, auth)
 		if err != nil {
-			log.Printf("error checking out to %s: %v\n", toBranch.String(), err)
+			log.Printf("error checking out to %s: %v\n", toBranch, err)
 		}
 
 		createPatches(cr)
@@ -83,7 +79,7 @@ func GeneratePatches(cr *config.CRSpec) {
 			return
 		}
 		//create pr
-		err = crGit.CreatePR(cr.GetManifestsRoot(), cr.Git.AccessToken, cr.Git.UserName, toBranch.String())
+		err = crGit.CreatePR(cr.GetManifestsRoot(), cr.Git.AccessToken, cr.Git.UserName, toBranch)
 		if err != nil {
 			log.Printf("error creating pr against %s: %v\n", cr.Git.Repository, err)
 
