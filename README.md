@@ -34,7 +34,7 @@ rotateKeys: "yes"|"None"|"no"
 # yes: generate keys and store in k8s, None: use default keys which is in EJSON_KEY env, no: restore key from k8s cluster
 configs:
   qliksense:
-  - name: acceptEULA values:
+  - name: acceptEULA
     value: "yes"
 secrets:
   qliksense:
