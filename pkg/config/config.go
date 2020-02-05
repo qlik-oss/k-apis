@@ -48,14 +48,26 @@ func (cr *CRSpec) AddToConfigs(svcName, name, value string) {
 				Value: value,
 			},
 		}
-	} else {
-		//append to the config
+		return
+	}
+	added := false
+	for i, nn := range cr.Configs[svcName] {
+		if nn.Name == name {
+			cr.Configs[svcName][i] = NameValue{
+				Name:  name,
+				Value: value,
+			}
+			added = true
+		}
+	}
+	if !added {
 		nv := NameValue{
 			Name:  name,
 			Value: value,
 		}
 		cr.Configs[svcName] = append(cr.Configs[svcName], nv)
 	}
+
 }
 
 func (cr *CRSpec) AddToSecrets(svcName, name, value string) {
@@ -69,8 +81,19 @@ func (cr *CRSpec) AddToSecrets(svcName, name, value string) {
 				Value: value,
 			},
 		}
-	} else {
-		//append to the config
+		return
+	}
+	added := false
+	for i, nn := range cr.Secrets[svcName] {
+		if nn.Name == name {
+			cr.Secrets[svcName][i] = NameValue{
+				Name:  name,
+				Value: value,
+			}
+			added = true
+		}
+	}
+	if !added {
 		nv := NameValue{
 			Name:  name,
 			Value: value,
