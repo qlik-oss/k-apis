@@ -16,33 +16,19 @@ func TestProcessReleaseName(t *testing.T) {
 		t.Fatalf("error reading config from file")
 	}
 	// create manifests structure
-	td, dir := createManifestsStructure(t)
+	_, dir := createManifestsStructure(t)
 	cfg.ManifestsRoot = filepath.Join(dir, "manifests")
 
-	releaseFileName := filepath.Join(cfg.GetManifestsRoot(), operatorPatchBaseFolder, "transformers", "release-name.yaml")
+	releaseFileName := filepath.Join(cfg.GetManifestsRoot(), operatorPatchBaseFolder, "transformers", "new-release.yaml")
 
-	oldCount := strings.Count(getFileContent(releaseFileName, t), "release: qliksense")
-	if oldCount != 1 {
-		t.Log("value: false not found in " + releaseFileName)
-		t.FailNow()
-	}
-	cfg.ReleaseName = ""
-	err = ProcessReleaseName(cfg)
-
-	newCount := strings.Count(getFileContent(releaseFileName, t), "release: qliksense")
-
-	if newCount != oldCount {
-		t.Fail()
-	}
 	cfg.ReleaseName = "new-release"
 	err = ProcessReleaseName(cfg)
 
-	newCount = strings.Count(getFileContent(releaseFileName, t), "release: new-release")
-
+	newCount := strings.Count(getFileContent(releaseFileName, t), "release: new-release")
+	t.Log(releaseFileName)
 	if newCount != 1 {
 		t.Fail()
 	}
-	cfg.ReleaseName = ""
 
-	td()
+	//td()
 }

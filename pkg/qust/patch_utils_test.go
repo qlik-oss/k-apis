@@ -91,7 +91,6 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
 - storage-class.yaml
-- release-name.yaml
 `
 	scf := `
 apiVersion: qlik.com/v1
@@ -126,20 +125,20 @@ patches:
 apiVersion: qlik.com/v1
 kind: SelectivePatch
 metadata:
-	name: release
+  name: release
 enabled: true
 patches:
 - target:
-		name: release
-		kind: LabelTransformer
-	patch: |-
-		apiVersion: builtin
-		kind: LabelTransformer
-		metadata:
-			name: release
-		labels:
-			release: qliksense`
-	err = ioutil.WriteFile(filepath.Join(oprTansDir, "release-name.yaml"), []byte(rn), tempPermissionCode)
+    name: release
+    kind: LabelTransformer
+  patch: |-
+    apiVersion: builtin
+    kind: LabelTransformer
+    metadata:
+      name: release
+      labels:
+        release: qliksense`
+	err = ioutil.WriteFile(filepath.Join(oprTansDir, releaseTemplateFileName), []byte(rn), tempPermissionCode)
 	if err != nil {
 		t.Log(err)
 		os.Exit(1)

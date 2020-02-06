@@ -1,12 +1,15 @@
 package qust
 
 import (
-	"fmt"
 	"github.com/qlik-oss/k-apis/pkg/config"
+	"io/ioutil"
 	"log"
-	"os"
-	"os/exec"
 	"path/filepath"
+	"strings"
+)
+
+const (
+	releaseTemplateFileName = "release-name-template.yaml"
 )
 
 // It will create patch for releaseName
@@ -15,23 +18,23 @@ func ProcessReleaseName(cr *config.CRSpec) error {
 		// no release name defined (default qliksense will be used)
 		return nil
 	}
-	releaseFileName := filepath.Join(cr.GetManifestsRoot(), operatorPatchBaseFolder, "transformers", "release-name.yaml")
-	if _, err := os.Stat(releaseFileName); os.IsNotExist(err) {
-		log.Panic(releaseFileName + " does not exist ")
-		return err
-	}
-	return changeReleaseName(cr.ReleaseName, releaseFileName)
-}
-
-func changeReleaseName(releaseName, releaseFileName string) error {
-	//sed -i -e 's/release\: qliksense/release\: new-release-name/g' release-name.yaml
-	s := `s/release\: qliksense/release\: %s/g`
-	cmd := exec.Command("sed", "-i", "-e", fmt.Sprintf(s, releaseName), releaseFileName)
-	err := cmd.Run()
+	transFolder := filepath.Join(cr.GetManifestsRoot(), operatorPatchBaseFolder, "transformers")
+	releaseTemplateFile := filepath.Join(transFolder, releaseTemplateFileName)
+	releaseFileName := filepath.Join(transFolder, cr.ReleaseName+".yaml")
+	content, err := ioutil.ReadFile(releaseTemplateFile)
 	if err != nil {
-		log.Fatal(err)
+		log.Println("cannot read "+releaseTemplateFile, err)
 		return err
 	}
-	return nil
+	result := strings.Replace(string(content), "release: qliksense", "release: "+cr.ReleaseName, 1)
+	if err = ioutil.WriteFile(releaseFileName, []byte(result), 0644); err != nil {
+		log.Println("cannot write file " + releaseFileName)
+		return err
+	}
+	if err = addResourceToKustomization(cr.ReleaseName+".yaml", filepath.Join(transFolder, "kustomization.yaml")); err != nil {
+		log.Println("Cannot process configs", err)
+		return err
+	}
 
+	return nil
 }
