@@ -26,7 +26,8 @@ func ProcessReleaseName(cr *config.CRSpec) error {
 		log.Println("cannot read "+releaseTemplateFile, err)
 		return err
 	}
-	result := strings.Replace(string(content), "release: qliksense", "release: "+cr.ReleaseName, 1)
+	result := strings.Replace(string(content), "release-template", cr.ReleaseName, 1)
+	result = strings.Replace(string(content), "release: qliksense", "release: "+cr.ReleaseName, 1)
 	if err = ioutil.WriteFile(releaseFileName, []byte(result), 0644); err != nil {
 		log.Println("cannot write file " + releaseFileName)
 		return err
