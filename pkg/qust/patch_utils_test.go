@@ -65,7 +65,7 @@ func createManifestsStructure(t *testing.T) (func(), string) {
 			 |--transformers
 					|--kustomization.yaml
 					|--storage-class.yaml
-					|--release-name.yaml
+					|--release-name-template.yaml
 	*/
 	dir, _ := ioutil.TempDir("", "test_manifests")
 	oprCnfDir := filepath.Join(dir, ".operator", "configs")
