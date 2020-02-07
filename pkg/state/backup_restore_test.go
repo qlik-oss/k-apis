@@ -27,7 +27,7 @@ func TestBackupRestore(t *testing.T) {
 	assert.NoError(t, err)
 	defer os.RemoveAll(targetDir)
 
-	err = Backup(path.Join(usr.HomeDir, ".kube/config"), "test", "", []BackupDir{{ConfigmapKey: "whatever", Directory: sourceDir}})
+	err = Backup(path.Join(usr.HomeDir, ".kube/config"), "test", "", "", []BackupDir{{ConfigmapKey: "whatever", Directory: sourceDir}})
 	assert.NoError(t, err)
 
 	err = Restore(path.Join(usr.HomeDir, ".kube/config"), "test", "", []BackupDir{{ConfigmapKey: "whatever", Directory: targetDir}})
