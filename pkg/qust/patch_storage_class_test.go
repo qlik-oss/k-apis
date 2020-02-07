@@ -20,17 +20,17 @@ func TestProcessStorageClassName(t *testing.T) {
 	td, dir := createManifestsStructure(t)
 	cfg.ManifestsRoot = filepath.Join(dir, "manifests")
 
-	storageClassFileName := filepath.Join(cfg.GetManifestsRoot(), operatorPatchBaseFolder, "transformers", "storage-class.yaml")
+	storageClassTemplateName := filepath.Join(cfg.GetManifestsRoot(), operatorPatchBaseFolder, "transformers", "storage-class-template.yaml")
 
-	oldCount := strings.Count(getStorageFileContent(storageClassFileName, t), "value: false")
+	oldCount := strings.Count(getStorageFileContent(storageClassTemplateName, t), "value: false")
 	if oldCount <= 0 {
-		t.Log("value: false not found in " + storageClassFileName)
+		t.Log("value: false not found in " + storageClassTemplateName)
 		t.FailNow()
 	}
 	cfg.StorageClassName = ""
 	err = ProcessStorageClassName(cfg)
 
-	newCount := strings.Count(getStorageFileContent(storageClassFileName, t), "value: true")
+	newCount := strings.Count(getStorageFileContent(storageClassTemplateName, t), "value: true")
 
 	if newCount != 0 {
 		t.Fail()
@@ -38,7 +38,9 @@ func TestProcessStorageClassName(t *testing.T) {
 	cfg.StorageClassName = "efs"
 	err = ProcessStorageClassName(cfg)
 
-	newCount = strings.Count(getStorageFileContent(storageClassFileName, t), "value: true")
+	storageClassReleaseName := filepath.Join(cfg.GetManifestsRoot(), operatorPatchBaseFolder, "transformers", cfg.StorageClassName+".yaml")
+
+	newCount = strings.Count(getStorageFileContent(storageClassReleaseName, t), "value: true")
 
 	if newCount != oldCount {
 		t.Fail()

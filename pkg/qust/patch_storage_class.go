@@ -1,10 +1,11 @@
 package qust
 
 import (
+	"io/ioutil"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/qlik-oss/k-apis/pkg/config"
 )
@@ -15,21 +16,27 @@ func ProcessStorageClassName(cr *config.CRSpec) error {
 		// no storage class defined
 		return nil
 	}
-	storageClassFileName := filepath.Join(cr.GetManifestsRoot(), operatorPatchBaseFolder, "transformers", "storage-class.yaml")
-	if _, err := os.Stat(storageClassFileName); os.IsNotExist(err) {
-		log.Panic(storageClassFileName + " does not exist ")
+	storageClassTemplateName := filepath.Join(cr.GetManifestsRoot(), operatorPatchBaseFolder, "transformers", "storage-class-template.yaml")
+	if _, err := os.Stat(storageClassTemplateName); os.IsNotExist(err) {
+		log.Panic(storageClassTemplateName + " does not exist ")
 		return err
 	}
-	return enableStorageClassNameTransformer(storageClassFileName)
+	return enableStorageClassNameTransformer(storageClassTemplateName, cr.StorageClassName, cr.GetManifestsRoot())
 }
 
-func enableStorageClassNameTransformer(storageClassFileName string) error {
-	//sed -i -e 's/value\: false/value\: true/g' storage-class.yaml
-	s := `s/value\: false/value\: true/g`
-	cmd := exec.Command("sed", "-i", "-e", s, storageClassFileName)
-	err := cmd.Run()
+func enableStorageClassNameTransformer(storageClassFileName string, storageClassName string, manifestsRoot string) error {
+	fileContents, err := ioutil.ReadFile(storageClassFileName)
 	if err != nil {
-		log.Fatal(err)
+		return err
+	}
+	replaceContents := strings.Replace(string(fileContents), "value: false", "value: true", -1)
+	storageClassReleaseName := filepath.Join(manifestsRoot, operatorPatchBaseFolder, "transformers", storageClassName+".yaml")
+	if err = ioutil.WriteFile(storageClassReleaseName, []byte(replaceContents), 0644); err != nil {
+		log.Println("cannot write file " + storageClassReleaseName)
+		return err
+	}
+	if err := addResourceToKustomization(storageClassReleaseName, storageClassFileName); err != nil {
+		log.Println("Cannot create storage class", err)
 		return err
 	}
 	return nil

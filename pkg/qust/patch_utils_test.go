@@ -114,7 +114,7 @@ patches:
 		t.Log(err)
 		os.Exit(1)
 	}
-	err = ioutil.WriteFile(filepath.Join(oprTansDir, "storage-class.yaml"), []byte(scf), tempPermissionCode)
+	err = ioutil.WriteFile(filepath.Join(oprTansDir, "storage-class-template.yaml"), []byte(scf), tempPermissionCode)
 	if err != nil {
 		t.Log(err)
 		os.Exit(1)
