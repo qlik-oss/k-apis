@@ -139,7 +139,7 @@ func getEjsonKeyDir(defaultKeyDir string) string {
 func backupKeys(cr *config.CRSpec, defaultKeyDir string, kubeConfigPath string) {
 	log.Println("backing up keys into the cluster")
 	if err := state.Backup(kubeConfigPath, backupConfigMapName, cr.NameSpace, []state.BackupDir{
-		{ConfigmapKey: "operator-keys", Directory: filepath.Join(cr.ManifestsRoot, ".operator/keys")},
+		{ConfigmapKey: "operator-keys", Directory: filepath.Join(cr.GetManifestsRoot(), ".operator/keys")},
 		{ConfigmapKey: "ejson-keys", Directory: getEjsonKeyDir(defaultKeyDir)},
 	}); err != nil {
 		log.Printf("error backing up keys data to the cluster, error: %v\n", err)
@@ -149,7 +149,7 @@ func backupKeys(cr *config.CRSpec, defaultKeyDir string, kubeConfigPath string) 
 func restoreKeys(cr *config.CRSpec, defaultKeyDir string, kubeConfigPath string) {
 	log.Println("restoring keys from the cluster")
 	if err := state.Restore(kubeConfigPath, backupConfigMapName, cr.NameSpace, []state.BackupDir{
-		{ConfigmapKey: "operator-keys", Directory: filepath.Join(cr.ManifestsRoot, ".operator/keys")},
+		{ConfigmapKey: "operator-keys", Directory: filepath.Join(cr.GetManifestsRoot(), ".operator/keys")},
 		{ConfigmapKey: "ejson-keys", Directory: getEjsonKeyDir(defaultKeyDir)},
 	}); err != nil {
 		log.Printf("error restoring keys data from the cluster, error: %v\n", err)
