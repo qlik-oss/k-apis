@@ -87,6 +87,8 @@ func GeneratePatches(cr *config.CRSpec, kubeConfigPath string) {
 }
 
 func createPatches(cr *config.CRSpec, kubeConfigPath string) {
+	//process cr.releaseName
+	qust.ProcessReleaseName(cr)
 	// process cr.storageClassName
 	if cr.StorageClassName != "" {
 		qust.ProcessStorageClassName(cr)

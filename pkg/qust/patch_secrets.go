@@ -69,15 +69,7 @@ func getSecretPatchBody(secretKey, svc, value string) types.Patch {
 
 // a SelectivePatch object with service name in it
 func getSuperSecretSPTemplate(svc string) *config.SelectivePatch {
-	su := &config.SelectivePatch{
-		ApiVersion: "qlik.com/v1",
-		Kind:       "SelectivePatch",
-		Metadata: map[string]string{
-			"name": svc + "-operator-secrets",
-		},
-		Enabled: true,
-	}
-	return su
+	return getSelectivePatchTemplate(svc + "-operator-secrets")
 }
 
 func getSuperSecretTemplate(svc string) *config.SupperSecret {

@@ -18,6 +18,7 @@ type CRSpec struct {
 	StorageClassName string                `json:"storageClassName,omitempty" yaml:"storageClassName,omitempty"`
 	NameSpace        string                `json:"namespace,omitempty" yaml:"namespace,omitempty"`
 	Git              Repo                  `json:"git,omitempty" yaml:"git,omitempty"`
+	ReleaseName      string                `json:"releaseName,omitempty" yaml:"releaseName,omitempty"`
 }
 
 type SelectivePatch struct {
@@ -52,8 +53,8 @@ type NameValue struct {
 
 type Repo struct {
 	Repository  string `json:"repository"`
-	UserName    string `json:"userName" yaml:"userName"`
-	Password    string `json:"password,omitempty"`
+	UserName    string `json:"userName,omitempty" yaml:"userName,omitempty"`
+	Password    string `json:"password,omitempty" yaml:"password,omitempty"`
 	AccessToken string `json:"accessToken,omitempty" yaml:"accessToken,omitempty"`
 	SecretName  string `json:"secretName,omitempty" yaml:"secretName,omitempty"`
 }

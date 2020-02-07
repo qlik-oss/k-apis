@@ -95,3 +95,16 @@ func getSelector(kind, svc string) *types.Selector {
 		LabelSelector: "app=" + svc,
 	}
 }
+
+// a SelectivePatch object with service name in it
+func getSelectivePatchTemplate(name string) *config.SelectivePatch {
+	su := &config.SelectivePatch{
+		ApiVersion: "qlik.com/v1",
+		Kind:       "SelectivePatch",
+		Metadata: map[string]string{
+			"name": name,
+		},
+		Enabled: true,
+	}
+	return su
+}
