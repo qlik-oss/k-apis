@@ -69,15 +69,7 @@ func getConfigMapPatchBody(dataKey, svc, value string) types.Patch {
 
 // a SelectivePatch object with service name in it
 func getSuperConfigSPTemplate(svc string) *config.SelectivePatch {
-	su := &config.SelectivePatch{
-		ApiVersion: "qlik.com/v1",
-		Kind:       "SelectivePatch",
-		Metadata: map[string]string{
-			"name": svc + "-operator-configs",
-		},
-		Enabled: true,
-	}
-	return su
+	return getSelectivePatchTemplate(svc + "-operator-configs")
 }
 
 func getSuperConfigMapTemplate(svc string) *config.SupperConfigMap {

@@ -39,6 +39,7 @@ func setupCr(t *testing.T) io.Reader {
 profile: base
 manifestsRoot: "./manifests"
 storageClassName: "efs"
+releaseName: "testing"
 configs:
   qliksense:
   - name: acceptEULA
@@ -64,6 +65,7 @@ func createManifestsStructure(t *testing.T) (func(), string) {
 			 |--transformers
 					|--kustomization.yaml
 					|--storage-class.yaml
+					|--release-name-template.yaml
 	*/
 	dir, _ := ioutil.TempDir("", "test_manifests")
 	oprCnfDir := filepath.Join(dir, ".operator", "configs")
@@ -119,7 +121,28 @@ patches:
 		t.Log(err)
 		os.Exit(1)
 	}
-
+	rn := `
+apiVersion: qlik.com/v1
+kind: SelectivePatch
+metadata:
+  name: release
+enabled: true
+patches:
+- target:
+    name: release
+    kind: LabelTransformer
+  patch: |-
+    apiVersion: builtin
+    kind: LabelTransformer
+    metadata:
+      name: release
+      labels:
+        release: qliksense`
+	err = ioutil.WriteFile(filepath.Join(oprTansDir, releaseTemplateFileName), []byte(rn), tempPermissionCode)
+	if err != nil {
+		t.Log(err)
+		os.Exit(1)
+	}
 	tearDown := func() {
 		os.RemoveAll(dir)
 	}

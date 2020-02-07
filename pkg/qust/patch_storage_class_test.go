@@ -1,7 +1,6 @@
 package qust
 
 import (
-	"io/ioutil"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -22,7 +21,9 @@ func TestProcessStorageClassName(t *testing.T) {
 
 	storageClassTemplateName := filepath.Join(cfg.GetManifestsRoot(), operatorPatchBaseFolder, "transformers", "storage-class-template.yaml")
 
-	oldCount := strings.Count(getStorageFileContent(storageClassTemplateName, t), "value: false")
+
+	oldCount := strings.Count(getFileContent(storageClassFileName, t), "value: false")
+
 	if oldCount <= 0 {
 		t.Log("value: false not found in " + storageClassTemplateName)
 		t.FailNow()
@@ -30,7 +31,7 @@ func TestProcessStorageClassName(t *testing.T) {
 	cfg.StorageClassName = ""
 	err = ProcessStorageClassName(cfg)
 
-	newCount := strings.Count(getStorageFileContent(storageClassTemplateName, t), "value: true")
+	newCount := strings.Count(getFileContent(storageClassFileName, t), "value: true")
 
 	if newCount != 0 {
 		t.Fail()
@@ -38,9 +39,11 @@ func TestProcessStorageClassName(t *testing.T) {
 	cfg.StorageClassName = "efs"
 	err = ProcessStorageClassName(cfg)
 
+
 	storageClassReleaseName := filepath.Join(cfg.GetManifestsRoot(), operatorPatchBaseFolder, "transformers", cfg.StorageClassName+".yaml")
 
-	newCount = strings.Count(getStorageFileContent(storageClassReleaseName, t), "value: true")
+	newCount = strings.Count(getFileContent(storageClassReleaseName, t), "value: true")
+
 
 	if newCount != oldCount {
 		t.Fail()
@@ -48,13 +51,4 @@ func TestProcessStorageClassName(t *testing.T) {
 	cfg.StorageClassName = ""
 
 	td()
-}
-
-func getStorageFileContent(fileName string, t *testing.T) string {
-	content, err := ioutil.ReadFile(fileName)
-	if err != nil {
-		t.Log("Cannot read file " + fileName)
-		t.FailNow()
-	}
-	return string(content)
 }
