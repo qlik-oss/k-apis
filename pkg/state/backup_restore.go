@@ -22,16 +22,18 @@ type BackupDir struct {
 }
 
 const (
-	releaseLabelKey      = "release"
-	releaseLabelValue    = "qliksense"
-	defaultNamespaceName = "default"
+	releaseLabelKey          = "release"
+	defaultReleaseLabelValue = "qliksense"
+	defaultNamespaceName     = "default"
 )
 
-func Backup(kubeconfigPath, configMapName, namespaceName string, backupDirs []BackupDir) error {
+func Backup(kubeconfigPath, configMapName, namespaceName, releaseLabelValue string, backupDirs []BackupDir) error {
 	if namespaceName == "" {
 		namespaceName = defaultNamespaceName
 	}
-
+	if releaseLabelValue == "" {
+		releaseLabelValue = defaultReleaseLabelValue
+	}
 	configMapsClient, err := getConfigMapsClient(kubeconfigPath, namespaceName)
 	if err != nil {
 		return err
