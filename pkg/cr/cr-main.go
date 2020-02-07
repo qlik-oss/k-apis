@@ -138,7 +138,7 @@ func getEjsonKeyDir(defaultKeyDir string) string {
 
 func backupKeys(cr *config.CRSpec, defaultKeyDir string, kubeConfigPath string) {
 	log.Println("backing up keys into the cluster")
-	if err := state.Backup(kubeConfigPath, backupConfigMapName, cr.NameSpace, []state.BackupDir{
+	if err := state.Backup(kubeConfigPath, backupConfigMapName, cr.NameSpace, cr.ReleaseName, []state.BackupDir{
 		{ConfigmapKey: "operator-keys", Directory: filepath.Join(cr.GetManifestsRoot(), ".operator/keys")},
 		{ConfigmapKey: "ejson-keys", Directory: getEjsonKeyDir(defaultKeyDir)},
 	}); err != nil {
