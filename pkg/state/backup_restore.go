@@ -13,7 +13,7 @@ import (
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	clientV1 "k8s.io/client-go/kubernetes/typed/core/v1"
-	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/rest"
 )
 
 type BackupDir struct {
@@ -102,7 +102,7 @@ func Restore(kubeconfigPath, configMapName, namespaceName string, backupInfos []
 }
 
 func getConfigMapsClient(kubeconfigPath string, namespaceName string) (clientV1.ConfigMapInterface, error) {
-	config, err := clientcmd.BuildConfigFromFlags("", kubeconfigPath)
+	config, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, err
 	}
