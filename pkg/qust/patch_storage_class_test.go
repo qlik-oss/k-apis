@@ -17,7 +17,7 @@ func TestProcessStorageClassName(t *testing.T) {
 	}
 	// create manifests structure
 	td, dir := createManifestsStructure(t)
-	cfg.ManifestsRoot = filepath.Join(dir, "manifests")
+	cfg.ManifestsRoot = dir
 
 	storageClassFileName := filepath.Join(cfg.GetManifestsRoot(), operatorPatchBaseFolder, "transformers", "storage-class.yaml")
 

@@ -57,7 +57,7 @@ func TestProcessConfigs(t *testing.T) {
 
 	td, dir := createManifestsStructure(t)
 
-	cfg.ManifestsRoot = filepath.Join(dir, "manifests")
+	cfg.ManifestsRoot = dir
 
 	ProcessConfigs(cfg)
 	content, _ := ioutil.ReadFile(filepath.Join(dir, ".operator", "configs", "qliksense.yaml"))
