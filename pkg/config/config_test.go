@@ -73,7 +73,7 @@ func TestDeepCopy(t *testing.T) {
 	cfg2 := cfg.DeepCopy()
 
 	if cfg2.GetProfileDir() != cfg.GetProfileDir() {
-		t.Logf("expected: %s, actual: %s", cfg.GetProfileDir, cfg2.GetProfileDir())
+		t.Logf("expected: %s, actual: %s", cfg.GetProfileDir(), cfg2.GetProfileDir())
 		t.Fail()
 	}
 
