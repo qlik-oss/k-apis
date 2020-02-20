@@ -37,7 +37,7 @@ func setupCr(t *testing.T) io.Reader {
 	t.Parallel()
 	sampleConfig := `
 profile: base
-manifestsRoot: "./manifests"
+manifestsRoot: "."
 storageClassName: "efs"
 releaseName: "testing"
 configs:

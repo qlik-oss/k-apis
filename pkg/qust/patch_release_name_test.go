@@ -17,7 +17,7 @@ func TestProcessReleaseName(t *testing.T) {
 	}
 	// create manifests structure
 	_, dir := createManifestsStructure(t)
-	cfg.ManifestsRoot = filepath.Join(dir, "manifests")
+	cfg.ManifestsRoot = dir
 
 	releaseFileName := filepath.Join(cfg.GetManifestsRoot(), operatorPatchBaseFolder, "transformers", "new-release.yaml")
 

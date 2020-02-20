@@ -10,7 +10,7 @@ import (
 func setup(t *testing.T) io.Reader {
 	t.Parallel()
 	sampleConfig := `
-  profile: manifests/base
+  profile: base
   manifestsRoot: "."
   configs:
     qliksense:
@@ -72,8 +72,8 @@ func TestDeepCopy(t *testing.T) {
 	}
 	cfg2 := cfg.DeepCopy()
 
-	if cfg2.Profile != cfg.Profile {
-		t.Logf("expected: %s, actual: %s", cfg.Profile, cfg2.Profile)
+	if cfg2.GetProfileDir() != cfg.GetProfileDir() {
+		t.Logf("expected: %s, actual: %s", cfg.GetProfileDir, cfg2.GetProfileDir())
 		t.Fail()
 	}
 
