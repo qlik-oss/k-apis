@@ -70,7 +70,7 @@ type Repo struct {
 }
 
 type K8sSecret struct {
-	APIVersion string            `json:"apiVersion" yaml:"apiVersion,"`
+	ApiVersion string            `json:"apiVersion" yaml:"apiVersion,"`
 	Kind       string            `json:"kind" yaml:"kind"`
 	Name       string            `json:"name" yaml:"name"`
 	Type       string            `json:"type" yaml:"type"`
