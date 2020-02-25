@@ -106,7 +106,7 @@ func TestAddToSecrets(t *testing.T) {
 	reader := setup(t)
 	cfg, _ := ReadCRSpecFromFile(reader)
 
-	cfg.AddToSecrets("qliksense", "mongo", "tadadaa")
+	cfg.AddToSecrets("qliksense", "mongo", "tadadaa", "sec", false)
 
 	rmap := make(map[string]string)
 

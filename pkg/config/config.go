@@ -70,33 +70,74 @@ func (cr *CRSpec) AddToConfigs(svcName, name, value string) {
 
 }
 
-func (cr *CRSpec) AddToSecrets(svcName, name, value string) {
+// AddToSecrets adds pieces to the secret section to the CR
+func (cr *CRSpec) AddToSecrets(svcName, name, value, secretName string, isK8sSecret bool) {
 	if cr.Secrets == nil {
 		cr.Secrets = make(map[string]NameValues)
 	}
 	if cr.Secrets[svcName] == nil {
-		cr.Secrets[svcName] = []NameValue{
-			{
-				Name:  name,
-				Value: value,
-			},
+		if !isK8sSecret {
+			// No Kubernetes secret
+			cr.Secrets[svcName] = []NameValue{
+				{
+					Name:  name,
+					Value: value,
+				},
+			}
+		} else { // A Kubernetes Secret exists
+			cr.Secrets[svcName] = []NameValue{
+				{
+					Name: name,
+					ValueFrom: &ValueFrom{
+						SecretKeyRef: &SecretKeyRef{
+							Name: secretName,
+							Key:  value,
+						},
+					},
+				},
+			}
 		}
 		return
 	}
 	added := false
 	for i, nn := range cr.Secrets[svcName] {
 		if nn.Name == name {
-			cr.Secrets[svcName][i] = NameValue{
-				Name:  name,
-				Value: value,
+			if !isK8sSecret {
+				cr.Secrets[svcName][i] = NameValue{
+					Name:  name,
+					Value: value,
+				}
+			} else {
+				cr.Secrets[svcName][i] = NameValue{
+					Name: name,
+					ValueFrom: &ValueFrom{
+						SecretKeyRef: &SecretKeyRef{
+							Name: secretName,
+							Key:  value,
+						},
+					},
+				}
 			}
 			added = true
 		}
 	}
 	if !added {
-		nv := NameValue{
-			Name:  name,
-			Value: value,
+		var nv NameValue
+		if !isK8sSecret {
+			nv = NameValue{
+				Name:  name,
+				Value: value,
+			}
+		} else {
+			nv = NameValue{
+				Name: name,
+				ValueFrom: &ValueFrom{
+					SecretKeyRef: &SecretKeyRef{
+						Name: secretName,
+						Key:  value,
+					},
+				},
+			}
 		}
 		cr.Secrets[svcName] = append(cr.Secrets[svcName], nv)
 	}

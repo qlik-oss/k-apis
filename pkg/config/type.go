@@ -47,9 +47,18 @@ type SupperSecret struct {
 type NameValues []NameValue
 
 type NameValue struct {
-	Name         string `yaml:"name" json:"name"`
-	Value        string `yaml:"value,omitempty" json:"value,omitempty"`
-	ValueFromKey string `yaml:"valueFromKey,omitempty" json:"valueFromKey,omitempty"`
+	Name      string     `yaml:"name" json:"name"`
+	Value     string     `yaml:"value,omitempty" json:"value,omitempty"`
+	ValueFrom *ValueFrom `yaml:"valueFromKey,omitempty" json:"valueFromKey,omitempty"`
+}
+
+type ValueFrom struct {
+	SecretKeyRef *SecretKeyRef `yaml:"secretKeyRef" json:"secretKeyRef"`
+}
+
+type SecretKeyRef struct {
+	Name string `yaml:"name" json:"name"`
+	Key  string `yaml:"key" json:"key"`
 }
 
 type Repo struct {
