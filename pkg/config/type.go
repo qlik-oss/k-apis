@@ -10,15 +10,16 @@ import (
 // customer will add patch into .configuration folder
 type CRSpec struct {
 	// relative to manifestsRoot folder, ex. ./manifests/base
-	Profile          string                `json:"profile" yaml:"profile"`
-	Secrets          map[string]NameValues `json:"secrets,omitempty" yaml:"secrets,omitempty"`
-	Configs          map[string]NameValues `json:"configs,omitempty" yaml:"configs,omitempty"`
-	ManifestsRoot    string                `json:"manifestsRoot,omitempty" yaml:"manifestsRoot,omitempty"`
-	RotateKeys       string                `json:"rotateKeys,omitempty" yaml:"rotateKeys,omitempty"`
-	StorageClassName string                `json:"storageClassName,omitempty" yaml:"storageClassName,omitempty"`
-	NameSpace        string                `json:"namespace,omitempty" yaml:"namespace,omitempty"`
-	Git              Repo                  `json:"git,omitempty" yaml:"git,omitempty"`
-	ReleaseName      string                `json:"releaseName,omitempty" yaml:"releaseName,omitempty"`
+	Profile              string                `json:"profile" yaml:"profile"`
+	Secrets              map[string]NameValues `json:"secrets,omitempty" yaml:"secrets,omitempty"`
+	Configs              map[string]NameValues `json:"configs,omitempty" yaml:"configs,omitempty"`
+	ManifestsRoot        string                `json:"manifestsRoot,omitempty" yaml:"manifestsRoot,omitempty"`
+	RotateKeys           string                `json:"rotateKeys,omitempty" yaml:"rotateKeys,omitempty"`
+	StorageClassName     string                `json:"storageClassName,omitempty" yaml:"storageClassName,omitempty"`
+	NameSpace            string                `json:"namespace,omitempty" yaml:"namespace,omitempty"`
+	Git                  Repo                  `json:"git,omitempty" yaml:"git,omitempty"`
+	ReleaseName          string                `json:"releaseName,omitempty" yaml:"releaseName,omitempty"`
+	DockerRegistrySecret string                `json:"dockerRegistrySecret,omitempty" yaml:"dockerRegistrySecret,omitempty"`
 }
 
 type SelectivePatch struct {
