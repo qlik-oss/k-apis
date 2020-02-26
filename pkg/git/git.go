@@ -1,14 +1,10 @@
 package git
 
 import (
-	"context"
 	"crypto/rand"
 	"fmt"
-	"path/filepath"
 	"time"
 
-	"github.com/google/go-github/github"
-	"golang.org/x/oauth2"
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
@@ -119,28 +115,28 @@ func resolveRemoteTagOrBranch(r *git.Repository, findRef string, auth transport.
 	}
 }
 
-func CreatePR(path string, token string, username string, branch string) error {
-	ctx := context.Background()
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: token},
-	)
-	tc := oauth2.NewClient(ctx, ts)
-	client := github.NewClient(tc)
+// func CreatePR(path string, token string, username string, branch string) error {
+// 	ctx := context.Background()
+// 	ts := oauth2.StaticTokenSource(
+// 		&oauth2.Token{AccessToken: token},
+// 	)
+// 	tc := oauth2.NewClient(ctx, ts)
+// 	client := github.NewClient(tc)
 
-	newPR := &github.NewPullRequest{
-		Title:               github.String("k-apis PR"),
-		Head:                github.String(branch),
-		Base:                github.String("master"),
-		Body:                github.String("auto generated pr"),
-		MaintainerCanModify: github.Bool(true),
-	}
+// 	newPR := &github.NewPullRequest{
+// 		Title:               github.String("k-apis PR"),
+// 		Head:                github.String(branch),
+// 		Base:                github.String("master"),
+// 		Body:                github.String("auto generated pr"),
+// 		MaintainerCanModify: github.Bool(true),
+// 	}
 
-	_, _, err := client.PullRequests.Create(context.Background(), username, filepath.Base(path), newPR)
-	if err != nil {
-		return err
-	}
-	return nil
-}
+// 	_, _, err := client.PullRequests.Create(context.Background(), username, filepath.Base(path), newPR)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	return nil
+// }
 
 func TokenGenerator() string {
 	b := make([]byte, 4)

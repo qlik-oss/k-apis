@@ -18,7 +18,7 @@ func TestProcessNamespace(t *testing.T) {
 	}
 	// create manifests structure
 	td, dir := createManifestsStructure(t)
-	cfg.ManifestsRoot = filepath.Join(dir, "manifests")
+	cfg.ManifestsRoot = dir
 	myNs := "test-ns"
 	cfg.NameSpace = myNs
 

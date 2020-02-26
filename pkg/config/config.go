@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/jinzhu/copier"
@@ -157,7 +158,9 @@ func (in *CRSpec) DeepCopy() *CRSpec {
 }
 
 func (cr *CRSpec) GetManifestsRoot() string {
-	// /cnab/root/manifest
-	return strings.TrimSuffix(cr.ManifestsRoot, "/manifests")
-	// return /cnab/root
+	return cr.ManifestsRoot
+}
+
+func (cr *CRSpec) GetProfileDir() string {
+	return filepath.Join("manifests", cr.Profile)
 }

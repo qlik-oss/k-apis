@@ -26,7 +26,7 @@ manifests-root
 It works based on CR config yaml in environment variable `YAML_CONF`. The CR config looks like this
 
 ```yaml
-profile: manifests/base
+profile: base
 manifestsRoot: "/cnab/app"
 storageClassName: efs
 namespace: whatever

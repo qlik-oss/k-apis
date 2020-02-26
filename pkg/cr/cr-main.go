@@ -35,6 +35,16 @@ func GeneratePatches(cr *config.CRSpec, kubeConfigPath string) {
 				Password: cr.Git.Password,
 			}
 		}
+		if cr.Git.AccessToken != "" {
+			username := cr.Git.UserName
+			if username == "" {
+				username = "installer"
+			}
+			auth = &http.BasicAuth{
+				Username: username,
+				Password: cr.Git.AccessToken,
+			}
+		}
 
 		// Clone or open
 		if _, err := os.Stat(cr.GetManifestsRoot()); os.IsNotExist(err) {
@@ -78,11 +88,11 @@ func GeneratePatches(cr *config.CRSpec, kubeConfigPath string) {
 			return
 		}
 		//create pr
-		err = crGit.CreatePR(cr.GetManifestsRoot(), cr.Git.AccessToken, cr.Git.UserName, toBranch)
-		if err != nil {
-			log.Printf("error creating pr against %s: %v\n", cr.Git.Repository, err)
+		// err = crGit.CreatePR(cr.GetManifestsRoot(), cr.Git.AccessToken, cr.Git.UserName, toBranch)
+		// if err != nil {
+		// 	log.Printf("error creating pr against %s: %v\n", cr.Git.Repository, err)
 
-		}
+		// }
 	}
 }
 
