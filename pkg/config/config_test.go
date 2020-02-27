@@ -3,6 +3,7 @@ package config
 import (
 	"io"
 	"os"
+	"os/exec"
 	"strings"
 	"testing"
 )
@@ -106,7 +107,7 @@ func TestAddToSecrets(t *testing.T) {
 	reader := setup(t)
 	cfg, _ := ReadCRSpecFromFile(reader)
 
-	cfg.AddToSecrets("qliksense", "mongo", "tadadaa")
+	cfg.AddToSecrets("qliksense", "mongo", "tadadaa", "sec")
 
 	rmap := make(map[string]string)
 
@@ -122,5 +123,64 @@ func TestAddToSecrets(t *testing.T) {
 
 	if rmap["mongo"] == "duplicate" {
 		t.Fail()
+	}
+}
+
+func TestReadFromKubernetesSecret(t *testing.T) {
+	// it is a special test, it requires kubectl configured.
+	// it will not run part of CI. to run it comment the line below
+	t.Skip()
+	_, err := exec.LookPath("kubectl")
+	if err != nil {
+		t.Skip()
+	}
+	cmd := exec.Command("kubectl", "create", "secret", "generic", "k-api-testing-sec", "--from-literal=test=myvalue")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+
+	myv, err := readFromKubernetesSecret("k-api-testing-sec", "test")
+	if myv != "myvalue" {
+		t.Fail()
+	}
+
+	cmd = exec.Command("kubectl", "delete", "secrets", "k-api-testing-sec")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+
+}
+
+func TestGetFromSecrets(t *testing.T) {
+
+	reader := setup(t)
+	cfg, _ := ReadCRSpecFromFile(reader)
+
+	cfg.AddToSecrets("qliksense2", "mongo", "tadadaa", "")
+	v := cfg.GetFromSecrets("qliksense2", "mongo")
+	if v != "tadadaa" {
+		t.Fail()
+	}
+
+	// skipping by default because it requries kubectl connection
+	t.Skip()
+
+	cmd := exec.Command("kubectl", "create", "secret", "generic", "k-api-testing-sec", "--from-literal=mongo=myvalue")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+
+	cfg.AddToSecrets("qliksense", "mongo", "tadadaa", "k-api-testing-sec")
+	v = cfg.GetFromSecrets("qliksense", "mongo")
+	if v != "myvalue" {
+		t.Fail()
+	}
+	cmd = exec.Command("kubectl", "delete", "secrets", "k-api-testing-sec")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if err != nil {
+		t.Fail()
+		t.Log(err)
 	}
 }

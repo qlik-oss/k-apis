@@ -1,13 +1,18 @@
 package config
 
 import (
+	"bytes"
+	"encoding/base64"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"os/exec"
 
 	"github.com/jinzhu/copier"
 	"gopkg.in/yaml.v2"
@@ -71,36 +76,94 @@ func (cr *CRSpec) AddToConfigs(svcName, name, value string) {
 
 }
 
-func (cr *CRSpec) AddToSecrets(svcName, name, value string) {
+// creates a NameValue object
+func createSecretNameValue(name, value, secretName string) NameValue {
+	if secretName != "" {
+		return NameValue{
+			Name: name,
+			ValueFrom: &ValueFrom{
+				SecretKeyRef: &SecretKeyRef{
+					Name: secretName,
+					Key:  name,
+				},
+			},
+		}
+	}
+
+	return NameValue{
+		Name:  name,
+		Value: value,
+	}
+}
+
+// AddToSecrets adds pieces to the secret section to the CR
+// if secretName is provided value is ignored
+// secretName is a kubernetes secret resource name, that already/will  exist in the cluster
+func (cr *CRSpec) AddToSecrets(svcName, name, value, secretName string) {
 	if cr.Secrets == nil {
 		cr.Secrets = make(map[string]NameValues)
 	}
 	if cr.Secrets[svcName] == nil {
 		cr.Secrets[svcName] = []NameValue{
-			{
-				Name:  name,
-				Value: value,
-			},
+			createSecretNameValue(name, value, secretName),
 		}
 		return
 	}
 	added := false
 	for i, nn := range cr.Secrets[svcName] {
 		if nn.Name == name {
-			cr.Secrets[svcName][i] = NameValue{
-				Name:  name,
-				Value: value,
-			}
+			cr.Secrets[svcName][i] = createSecretNameValue(name, value, secretName)
 			added = true
 		}
 	}
 	if !added {
-		nv := NameValue{
-			Name:  name,
-			Value: value,
-		}
-		cr.Secrets[svcName] = append(cr.Secrets[svcName], nv)
+		cr.Secrets[svcName] = append(cr.Secrets[svcName], createSecretNameValue(name, value, secretName))
 	}
+}
+
+// GetFromSecrets return value of the secret that exist in serets map of the spec
+func (cr *CRSpec) GetFromSecrets(svcName, name string) string {
+	for _, nn := range cr.Secrets[svcName] {
+		if nn.Name == name {
+			return getSecretValue(nn)
+		}
+	}
+	return ""
+}
+
+// return secret value from NameValue object
+func getSecretValue(nv NameValue) string {
+	if nv.ValueFrom != nil {
+		if va, err := readFromKubernetesSecret(nv.ValueFrom.SecretKeyRef.Name, nv.ValueFrom.SecretKeyRef.Key); err != nil {
+			fmt.Println(err)
+			return ""
+		} else {
+			return va
+		}
+	}
+	return nv.Value
+}
+
+func (nv NameValue) GetSecretValue() string {
+	return getSecretValue(nv)
+}
+
+func readFromKubernetesSecret(secName, keyName string) (string, error) {
+	cmd := exec.Command("kubectl", "get", "secrets", secName, "-o", "go-template", "--template={{.data."+keyName+"}}")
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+	if err != nil {
+		return "", err
+	}
+	fmt.Println(out.String())
+	data, err := base64.StdEncoding.DecodeString(out.String())
+	if err != nil {
+		fmt.Println("error:", err)
+		return "", err
+	}
+	return string(data), nil
 }
 
 func (in *CRSpec) DeepCopyInto(out *CRSpec) {
