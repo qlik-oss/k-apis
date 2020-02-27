@@ -114,7 +114,7 @@ func (cr *CRSpec) AddToSecrets(svcName, name, value, secretName string, isK8sSec
 					ValueFrom: &ValueFrom{
 						SecretKeyRef: &SecretKeyRef{
 							Name: secretName,
-							Key:  value,
+							Key:  name,
 						},
 					},
 				}
@@ -135,7 +135,7 @@ func (cr *CRSpec) AddToSecrets(svcName, name, value, secretName string, isK8sSec
 				ValueFrom: &ValueFrom{
 					SecretKeyRef: &SecretKeyRef{
 						Name: secretName,
-						Key:  value,
+						Key:  name,
 					},
 				},
 			}
