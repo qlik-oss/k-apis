@@ -98,6 +98,7 @@ func createSecretNameValue(name, value, secretName string) NameValue {
 
 // AddToSecrets adds pieces to the secret section to the CR
 // if secretName is provided value is ignored
+// secretName is a kubernetes secret resource name, that already/will  exist in the cluster
 func (cr *CRSpec) AddToSecrets(svcName, name, value, secretName string) {
 	if cr.Secrets == nil {
 		cr.Secrets = make(map[string]NameValues)
