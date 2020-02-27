@@ -33,7 +33,7 @@ func createSupperSecretSelectivePatch(sec map[string]config.NameValues) map[stri
 	for svc, data := range sec {
 		sp := getSuperSecretSPTemplate(svc)
 		for _, conf := range data {
-			p := getSecretPatchBody(conf.Name, svc, conf.Value)
+			p := getSecretPatchBody(svc, conf)
 			sp.Patches = []types.Patch{p}
 			mergeSelectivePatches(sp, spMap[svc])
 			spMap[svc] = sp
@@ -43,10 +43,10 @@ func createSupperSecretSelectivePatch(sec map[string]config.NameValues) map[stri
 }
 
 // create a patch section to be added to the selective patch
-func getSecretPatchBody(secretKey, svc, value string) types.Patch {
+func getSecretPatchBody(svc string, nv config.NameValue) types.Patch {
 	ph := getSuperSecretTemplate(svc)
 	ph.StringData = map[string]string{
-		secretKey: value,
+		nv.Name: nv.GetSecretValue(),
 	}
 	// ph := `
 	// 	apiVersion: qlik.com/v1

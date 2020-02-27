@@ -68,11 +68,3 @@ type Repo struct {
 	AccessToken string `json:"accessToken,omitempty" yaml:"accessToken,omitempty"`
 	SecretName  string `json:"secretName,omitempty" yaml:"secretName,omitempty"`
 }
-
-type K8sSecret struct {
-	ApiVersion string            `json:"apiVersion" yaml:"apiVersion"`
-	Kind       string            `json:"kind" yaml:"kind"`
-	Name       string            `json:"name" yaml:"name"`
-	Type       string            `json:"type" yaml:"type"`
-	Data       map[string]string `json:"data" yaml:"data"`
-}
