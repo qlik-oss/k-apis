@@ -19,23 +19,23 @@ import (
 )
 
 // ReadCRSpecFromFile return CR config from yaml file
-func ReadCRSpecFromFile(file io.Reader) (*CRSpec, error) {
+func ReadCRSpecFromFile(file io.Reader) (*KApiCr, error) {
 	content, err := ioutil.ReadAll(file)
 	if err != nil {
 		log.Fatal(err)
 	}
-	cr := CRSpec{}
-	err = yaml.Unmarshal(content, &cr)
+	kCr := KApiCr{}
+	err = yaml.Unmarshal(content, &kCr)
 	if err != nil {
 		log.Fatal(err)
 		return nil, err
 	}
 
-	return &cr, nil
+	return &kCr, nil
 }
 
 // ReadCRSpecFromEnvYaml return CR config from env yaml
-func ReadCRSpecFromEnvYaml() (*CRSpec, error) {
+func ReadCRSpecFromEnvYaml() (*KApiCr, error) {
 	content := os.Getenv("YAML_CONF")
 	if content == "" {
 		return nil, errors.New("YAML_CONF env cannot be empty")
@@ -178,7 +178,17 @@ func (in *CRSpec) DeepCopy() *CRSpec {
 	in.DeepCopyInto(out)
 	return out
 }
-
+func (in *KApiCr) DeepCopyInto(out *KApiCr) {
+	copier.Copy(out, in)
+}
+func (in *KApiCr) DeepCopy() *KApiCr {
+	if in == nil {
+		return nil
+	}
+	out := new(KApiCr)
+	in.DeepCopyInto(out)
+	return out
+}
 func (cr *CRSpec) GetManifestsRoot() string {
 	return cr.ManifestsRoot
 }

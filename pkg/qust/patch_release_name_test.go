@@ -17,11 +17,11 @@ func TestProcessReleaseName(t *testing.T) {
 	}
 	// create manifests structure
 	_, dir := createManifestsStructure(t)
-	cfg.ManifestsRoot = dir
+	cfg.Spec.ManifestsRoot = dir
 
-	releaseFileName := filepath.Join(cfg.GetManifestsRoot(), operatorPatchBaseFolder, "transformers", "new-release.yaml")
+	releaseFileName := filepath.Join(cfg.Spec.GetManifestsRoot(), operatorPatchBaseFolder, "transformers", "new-release.yaml")
 
-	cfg.ReleaseName = "new-release"
+	cfg.GetObjectMeta().SetName("new-release")
 	err = ProcessReleaseName(cfg)
 
 	newCount := strings.Count(getFileContent(releaseFileName, t), "release: new-release")

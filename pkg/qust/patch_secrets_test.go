@@ -17,7 +17,7 @@ func TestCreateSupperSecretSelectivePatch(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error reading config from file")
 	}
-	spMap := createSupperSecretSelectivePatch(cfg.Secrets)
+	spMap := createSupperSecretSelectivePatch(cfg.Spec.Secrets)
 	sp := spMap["qliksense"]
 	if sp.ApiVersion != "qlik.com/v1" {
 		t.Fail()
@@ -60,8 +60,8 @@ func TestProcessCrSecrets(t *testing.T) {
 
 	td, dir := createManifestsStructure(t)
 
-	cfg.ManifestsRoot = dir
-	ProcessSecrets(cfg)
+	cfg.Spec.ManifestsRoot = dir
+	ProcessSecrets(cfg.Spec)
 	content, _ := ioutil.ReadFile(filepath.Join(dir, ".operator", "secrets", "qliksense.yaml"))
 
 	sp := getSuperSecretSPTemplate("qliksense")

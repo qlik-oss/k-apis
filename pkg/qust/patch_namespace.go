@@ -10,15 +10,15 @@ import (
 )
 
 // It will patch the built-in NamespaceTransformer
-func ProcessNamespace(cr *config.CRSpec) error {
-	if cr.NameSpace == "" {
+func ProcessNamespace(cr *config.KApiCr) error {
+	if cr.GetObjectMeta().GetNamespace() == "" {
 		// no namespace provided so default should work
 		return nil
 	}
-	namespacePatchFileName := "namespace-" + cr.NameSpace + ".yaml"
+	namespacePatchFileName := "namespace-" + cr.GetObjectMeta().GetNamespace() + ".yaml"
 
-	fileFullPath := filepath.Join(cr.GetManifestsRoot(), operatorPatchBaseFolder, "transformers", namespacePatchFileName)
-	fileContents := strings.Replace(namespacePatchTemplate(), "NAMESPACE_NAME", cr.NameSpace, 1)
+	fileFullPath := filepath.Join(cr.Spec.GetManifestsRoot(), operatorPatchBaseFolder, "transformers", namespacePatchFileName)
+	fileContents := strings.Replace(namespacePatchTemplate(), "NAMESPACE_NAME", cr.GetObjectMeta().GetNamespace(), 1)
 
 	err := ioutil.WriteFile(fileFullPath, []byte(fileContents), FILE_PERMISION)
 
@@ -27,7 +27,7 @@ func ProcessNamespace(cr *config.CRSpec) error {
 		return err
 	}
 	// add that file to kustomization.yaml
-	fileFullPath = filepath.Join(cr.GetManifestsRoot(), operatorPatchBaseFolder, "transformers", "kustomization.yaml")
+	fileFullPath = filepath.Join(cr.Spec.GetManifestsRoot(), operatorPatchBaseFolder, "transformers", "kustomization.yaml")
 	err = addResourceToKustomization(namespacePatchFileName, fileFullPath)
 	if err != nil {
 		log.Panic("Cannot add resource to "+fileFullPath, err)
