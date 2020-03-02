@@ -17,32 +17,32 @@ func TestProcessStorageClassName(t *testing.T) {
 	}
 	// create manifests structure
 	td, dir := createManifestsStructure(t)
-	cfg.ManifestsRoot = dir
+	cfg.Spec.ManifestsRoot = dir
 
-	storageClassFileName := filepath.Join(cfg.GetManifestsRoot(), operatorPatchBaseFolder, "transformers", "storage-class.yaml")
+	storageClassFileName := filepath.Join(cfg.Spec.GetManifestsRoot(), operatorPatchBaseFolder, "transformers", "storage-class.yaml")
 
 	oldCount := strings.Count(getFileContent(storageClassFileName, t), "value: false")
 	if oldCount <= 0 {
 		t.Log("value: false not found in " + storageClassFileName)
 		t.FailNow()
 	}
-	cfg.StorageClassName = ""
-	err = ProcessStorageClassName(cfg)
+	cfg.Spec.StorageClassName = ""
+	err = ProcessStorageClassName(cfg.Spec)
 
 	newCount := strings.Count(getFileContent(storageClassFileName, t), "value: true")
 
 	if newCount != 0 {
 		t.Fail()
 	}
-	cfg.StorageClassName = "efs"
-	err = ProcessStorageClassName(cfg)
+	cfg.Spec.StorageClassName = "efs"
+	err = ProcessStorageClassName(cfg.Spec)
 
 	newCount = strings.Count(getFileContent(storageClassFileName, t), "value: true")
 
 	if newCount != oldCount {
 		t.Fail()
 	}
-	cfg.StorageClassName = ""
+	cfg.Spec.StorageClassName = ""
 
 	td()
 }

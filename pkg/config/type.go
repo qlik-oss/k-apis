@@ -1,6 +1,7 @@
 package config
 
 import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/kustomize/api/types"
 )
 
@@ -16,9 +17,13 @@ type CRSpec struct {
 	ManifestsRoot    string                `json:"manifestsRoot,omitempty" yaml:"manifestsRoot,omitempty"`
 	RotateKeys       string                `json:"rotateKeys,omitempty" yaml:"rotateKeys,omitempty"`
 	StorageClassName string                `json:"storageClassName,omitempty" yaml:"storageClassName,omitempty"`
-	NameSpace        string                `json:"namespace,omitempty" yaml:"namespace,omitempty"`
 	Git              Repo                  `json:"git,omitempty" yaml:"git,omitempty"`
-	ReleaseName      string                `json:"releaseName,omitempty" yaml:"releaseName,omitempty"`
+}
+
+type KApiCr struct {
+	metav1.TypeMeta   `json:",inline" yaml:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty" yaml:"metadata,omitempty"`
+	Spec              *CRSpec `json:"spec" yaml:"spec"`
 }
 
 type SelectivePatch struct {

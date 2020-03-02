@@ -36,18 +36,23 @@ resources:
 func setupCr(t *testing.T) io.Reader {
 	t.Parallel()
 	sampleConfig := `
-profile: base
-manifestsRoot: "."
-storageClassName: "efs"
-releaseName: "testing"
-configs:
-  qliksense:
-  - name: acceptEULA
-    value: "yes"
-secrets:
-  qliksense:
-  - name: mongoDbUri
-    value: mongo://mongo:3307`
+apiVersion: qlik.com/v1
+kind: Qliksense
+metadata:
+  name: "testing"
+  namespace: "testing-namespace"
+spec:
+  profile: base
+  manifestsRoot: "."
+  storageClassName: "efs"
+  configs:
+    qliksense:
+    - name: acceptEULA
+      value: "yes"
+  secrets:
+    qliksense:
+    - name: mongoDbUri
+      value: mongo://mongo:3307`
 	os.Setenv("YAML_CONF", sampleConfig)
 	return strings.NewReader(sampleConfig)
 }

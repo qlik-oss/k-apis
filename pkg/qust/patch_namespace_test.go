@@ -18,18 +18,18 @@ func TestProcessNamespace(t *testing.T) {
 	}
 	// create manifests structure
 	td, dir := createManifestsStructure(t)
-	cfg.ManifestsRoot = dir
+	cfg.Spec.ManifestsRoot = dir
 	myNs := "test-ns"
-	cfg.NameSpace = myNs
+	cfg.GetObjectMeta().SetNamespace(myNs)
 
 	err = ProcessNamespace(cfg)
 	if err != nil {
 		td()
 		t.FailNow()
 	}
-	nsFileName := "namespace-" + cfg.NameSpace + ".yaml"
-	nsFileFullPath := filepath.Join(cfg.GetManifestsRoot(), operatorPatchBaseFolder, "transformers", nsFileName)
-	kustFile := filepath.Join(cfg.GetManifestsRoot(), operatorPatchBaseFolder, "transformers", "kustomization.yaml")
+	nsFileName := "namespace-" + cfg.GetObjectMeta().GetNamespace() + ".yaml"
+	nsFileFullPath := filepath.Join(cfg.Spec.GetManifestsRoot(), operatorPatchBaseFolder, "transformers", nsFileName)
+	kustFile := filepath.Join(cfg.Spec.GetManifestsRoot(), operatorPatchBaseFolder, "transformers", "kustomization.yaml")
 
 	if !strings.Contains(getFileContent(nsFileFullPath, t), myNs) {
 		t.Log("Namespace patch file not patch")

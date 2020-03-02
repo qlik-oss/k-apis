@@ -11,16 +11,22 @@ import (
 func setup(t *testing.T) io.Reader {
 	t.Parallel()
 	sampleConfig := `
-  profile: base
-  manifestsRoot: "."
-  configs:
-    qliksense:
-    - name: acceptEULA
-      value: "yes"
-  secrets:
-    qliksense:
-    - name: mongo
-      value: blalalaa`
+  apiVersion: qlik.com/v1
+  kind: Qliksense
+  metadata:
+    name: test-cr
+    namespace: test-namespace
+  spec:
+    profile: base
+    manifestsRoot: "."
+    configs:
+      qliksense:
+      - name: acceptEULA
+        value: "yes"
+    secrets:
+      qliksense:
+      - name: mongo
+        value: blalalaa`
 	os.Setenv("YAML_CONF", sampleConfig)
 	return strings.NewReader(sampleConfig)
 }
@@ -32,10 +38,10 @@ func TestReadCRSpecFromFile(t *testing.T) {
 		t.Fatalf("error reading config from file")
 	}
 
-	if cfg.Configs["qliksense"][0].Name != "acceptEULA" {
+	if cfg.Spec.Configs["qliksense"][0].Name != "acceptEULA" {
 		t.Fail()
 	}
-	if cfg.Configs["qliksense"][0].Value != "yes" {
+	if cfg.Spec.Configs["qliksense"][0].Value != "yes" {
 		t.Fail()
 	}
 
@@ -52,10 +58,10 @@ func TestReadCRSpecFromEnvYaml(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error reading config from env")
 	}
-	if cfg.Configs["qliksense"][0].Name != "acceptEULA" {
+	if cfg.Spec.Configs["qliksense"][0].Name != "acceptEULA" {
 		t.Fail()
 	}
-	if cfg.Configs["qliksense"][0].Value != "yes" {
+	if cfg.Spec.Configs["qliksense"][0].Value != "yes" {
 		t.Fail()
 	}
 }
@@ -73,8 +79,8 @@ func TestDeepCopy(t *testing.T) {
 	}
 	cfg2 := cfg.DeepCopy()
 
-	if cfg2.GetProfileDir() != cfg.GetProfileDir() {
-		t.Logf("expected: %s, actual: %s", cfg.GetProfileDir(), cfg2.GetProfileDir())
+	if cfg2.Spec.GetProfileDir() != cfg.Spec.GetProfileDir() {
+		t.Logf("expected: %s, actual: %s", cfg.Spec.GetProfileDir(), cfg2.Spec.GetProfileDir())
 		t.Fail()
 	}
 
@@ -84,11 +90,11 @@ func TestAddToConfigs(t *testing.T) {
 	reader := setup(t)
 	cfg, _ := ReadCRSpecFromFile(reader)
 
-	cfg.AddToConfigs("qliksense", "acceptEULA", "blabla")
+	cfg.Spec.AddToConfigs("qliksense", "acceptEULA", "blabla")
 
 	rmap := make(map[string]string)
 
-	for _, nv := range cfg.Configs["qliksense"] {
+	for _, nv := range cfg.Spec.Configs["qliksense"] {
 		if rmap[nv.Name] == "" {
 			rmap[nv.Name] = "found"
 			continue
@@ -107,11 +113,11 @@ func TestAddToSecrets(t *testing.T) {
 	reader := setup(t)
 	cfg, _ := ReadCRSpecFromFile(reader)
 
-	cfg.AddToSecrets("qliksense", "mongo", "tadadaa", "sec")
+	cfg.Spec.AddToSecrets("qliksense", "mongo", "tadadaa", "sec")
 
 	rmap := make(map[string]string)
 
-	for _, nv := range cfg.Secrets["qliksense"] {
+	for _, nv := range cfg.Spec.Secrets["qliksense"] {
 		if rmap[nv.Name] == "" {
 			rmap[nv.Name] = "found"
 			continue
@@ -156,8 +162,8 @@ func TestGetFromSecrets(t *testing.T) {
 	reader := setup(t)
 	cfg, _ := ReadCRSpecFromFile(reader)
 
-	cfg.AddToSecrets("qliksense2", "mongo", "tadadaa", "")
-	v := cfg.GetFromSecrets("qliksense2", "mongo")
+	cfg.Spec.AddToSecrets("qliksense2", "mongo", "tadadaa", "")
+	v := cfg.Spec.GetFromSecrets("qliksense2", "mongo")
 	if v != "tadadaa" {
 		t.Fail()
 	}
@@ -170,8 +176,8 @@ func TestGetFromSecrets(t *testing.T) {
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
 
-	cfg.AddToSecrets("qliksense", "mongo", "tadadaa", "k-api-testing-sec")
-	v = cfg.GetFromSecrets("qliksense", "mongo")
+	cfg.Spec.AddToSecrets("qliksense", "mongo", "tadadaa", "k-api-testing-sec")
+	v = cfg.Spec.GetFromSecrets("qliksense", "mongo")
 	if v != "myvalue" {
 		t.Fail()
 	}

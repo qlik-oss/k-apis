@@ -17,7 +17,7 @@ func TestCreateSupperConfigSelectivePatch(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error reading config from file")
 	}
-	spMap := createSupperConfigSelectivePatch(cfg.Configs)
+	spMap := createSupperConfigSelectivePatch(cfg.Spec.Configs)
 	sp := spMap["qliksense"]
 	if sp.ApiVersion != "qlik.com/v1" {
 		t.Fail()
@@ -57,9 +57,9 @@ func TestProcessConfigs(t *testing.T) {
 
 	td, dir := createManifestsStructure(t)
 
-	cfg.ManifestsRoot = dir
+	cfg.Spec.ManifestsRoot = dir
 
-	ProcessConfigs(cfg)
+	ProcessConfigs(cfg.Spec)
 	content, _ := ioutil.ReadFile(filepath.Join(dir, ".operator", "configs", "qliksense.yaml"))
 
 	sp := getSuperConfigSPTemplate("qliksense")
