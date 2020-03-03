@@ -24,7 +24,7 @@ const (
 )
 
 func GeneratePatches(cr *config.KApiCr, kubeConfigPath string) {
-	if cr.Spec.Git.Repository == "" {
+	if cr.Spec.Git == nil || cr.Spec.Git.Repository == "" {
 		createPatches(cr, kubeConfigPath)
 	} else {
 		var r *git.Repository
