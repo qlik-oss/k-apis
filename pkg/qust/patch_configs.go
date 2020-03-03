@@ -31,12 +31,11 @@ func ProcessConfigs(cr *config.CRSpec) {
 func createSupperConfigSelectivePatch(confg map[string]config.NameValues) map[string]*config.SelectivePatch {
 	spMap := make(map[string]*config.SelectivePatch)
 	for svc, data := range confg {
-		sp := getSuperConfigSPTemplate(svc)
+		spMap[svc] = getSuperConfigSPTemplate(svc)
 		for _, conf := range data {
-			p := getConfigMapPatchBody(conf.Name, svc, conf.Value)
-			sp.Patches = []types.Patch{p}
-			mergeSelectivePatches(sp, spMap[svc])
-			spMap[svc] = sp
+			sp := getSuperConfigSPTemplate(svc)
+			sp.Patches = []types.Patch{getConfigMapPatchBody(conf.Name, svc, conf.Value)}
+			mergeSelectivePatches(spMap[svc], sp)
 		}
 	}
 	return spMap
