@@ -143,3 +143,16 @@ func TokenGenerator() string {
 	rand.Read(b)
 	return fmt.Sprintf("%x", b)
 }
+
+func DiscardAllUnstagedChanges(r *git.Repository) error {
+	if workTree, err := r.Worktree(); err != nil {
+		return err
+	} else if refHead, err := r.Head(); err != nil {
+		return err
+	} else if err := workTree.Clean(&git.CleanOptions{Dir: true}); err != nil {
+		return err
+	} else if err := workTree.Checkout(&git.CheckoutOptions{Hash: refHead.Hash(), Force: true}); err != nil {
+		return err
+	}
+	return nil
+}
