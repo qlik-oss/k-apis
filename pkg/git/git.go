@@ -151,8 +151,9 @@ func DiscardAllUnstagedChanges(r *git.Repository) error {
 		return err
 	} else if err := workTree.Clean(&git.CleanOptions{Dir: true}); err != nil {
 		return err
-	} else if err := workTree.Checkout(&git.CheckoutOptions{Hash: refHead.Hash(), Force: true}); err != nil {
-		return err
+	} else if branchName := refHead.Name(); branchName != "" {
+		return workTree.Checkout(&git.CheckoutOptions{Branch: branchName, Force: true})
+	} else {
+		return workTree.Checkout(&git.CheckoutOptions{Hash: refHead.Hash(), Force: true})
 	}
-	return nil
 }
