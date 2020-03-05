@@ -1,6 +1,7 @@
 package git
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -8,6 +9,7 @@ import (
 	"path"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestCloneAndCheckout(t *testing.T) {
@@ -59,6 +61,52 @@ func TestBranchOnCheckout(t *testing.T) {
 		t.Fatalf("expected branch to be: %v, got: %v", branchName, actualBranchName)
 	} else {
 		fmt.Printf("successfully created branch: %v, cleaning up\n", branchName)
+		_ = os.RemoveAll(tmpDir)
+	}
+}
+
+func TestDiscardAllUnstagedChanges(t *testing.T) {
+	repo := "https://github.com/test/HelloWorld"
+
+	tmpDir, err := ioutil.TempDir("", "")
+	if err != nil {
+		t.Fatalf("error creating temp dir: %v", err)
+	} else {
+		fmt.Printf("created tmp dir: %v\n", tmpDir)
+	}
+
+	repoPath := path.Join(tmpDir, "repo")
+	readmeBuffer := &bytes.Buffer{}
+
+	r, err := CloneRepository(repoPath, repo, nil)
+	if err != nil {
+		t.Fatalf("error cloning repo: %v, error: %v", repo, err)
+	}
+
+	randomSalad := fmt.Sprintf("\nwith this salad: %v\n", time.Now())
+
+	if err := ioutil.WriteFile(path.Join(repoPath, "salad"), []byte("greens\n"), os.ModePerm); err != nil {
+		t.Fatalf("error adding salad to the repo: %v", err)
+	} else if readmeBytes, err := ioutil.ReadFile(path.Join(repoPath, "README.md")); err != nil {
+		t.Fatalf("error reading README.md from the repo: %v", err)
+	} else if _, err := readmeBuffer.Write(readmeBytes); err != nil {
+		t.Fatalf("error writing to buffer 1: %v", err)
+	} else if _, err := readmeBuffer.Write([]byte(randomSalad)); err != nil {
+		t.Fatalf("error writing to buffer 2: %v", err)
+	} else if err := ioutil.WriteFile(path.Join(repoPath, "README.md"), readmeBuffer.Bytes(), os.ModePerm); err != nil {
+		t.Fatalf("error adding salad to the repo's README.md: %v", err)
+	}
+
+	if err := DiscardAllUnstagedChanges(r); err != nil {
+		t.Fatalf("error discarding changes to the repo: %v", err)
+	} else if _, err := os.Stat(path.Join(repoPath, "salad")); !os.IsNotExist(err) {
+		t.Fatal("expected salad to be gone from the repo, but it was still there")
+	} else if readmeBytes, err := ioutil.ReadFile(path.Join(repoPath, "README.md")); err != nil {
+		t.Fatalf("error reading README.md from the repo: %v", err)
+	} else if bytes.HasSuffix(readmeBytes, []byte(randomSalad)) {
+		t.Fatalf("expected salad to be gone from the repo's README.md, but it was still there")
+	} else {
+		fmt.Print("successfully discarded all unstaged changes\n")
 		_ = os.RemoveAll(tmpDir)
 	}
 }
