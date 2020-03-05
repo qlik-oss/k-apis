@@ -101,8 +101,6 @@ func TestDiscardAllUnstagedChanges(t *testing.T) {
 		t.Fatalf("error discarding changes to the repo: %v", err)
 	} else if _, err := os.Stat(path.Join(repoPath, "salad")); !os.IsNotExist(err) {
 		t.Fatal("expected salad to be gone from the repo, but it was still there")
-	} else if _, err := os.Stat(path.Join(repoPath, "salad")); !os.IsNotExist(err) {
-		t.Fatal("expected salad to be gone from the repo, but it was still there")
 	} else if readmeBytes, err := ioutil.ReadFile(path.Join(repoPath, "README.md")); err != nil {
 		t.Fatalf("error reading README.md from the repo: %v", err)
 	} else if bytes.HasSuffix(readmeBytes, []byte(randomSalad)) {
