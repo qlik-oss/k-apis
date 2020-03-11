@@ -17,7 +17,10 @@ func TestCreateSupperConfigSelectivePatch(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error reading config from file")
 	}
-	spMap := createSupperConfigSelectivePatch(cfg.Spec.Configs)
+	spMap, err := createSupperConfigSelectivePatch(cfg.Spec.Configs)
+	if err != nil {
+		t.Fatalf("error creating map of service selective patches")
+	}
 	sp := spMap["qliksense"]
 	if sp.ApiVersion != "qlik.com/v1" {
 		t.Fail()

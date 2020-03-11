@@ -6,6 +6,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/Shopify/ejson"
+
 	"github.com/qlik-oss/k-apis/pkg/config"
 	"gopkg.in/yaml.v2"
 	"sigs.k8s.io/kustomize/api/types"
@@ -17,7 +19,10 @@ func TestCreateSupperSecretSelectivePatch(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error reading config from file")
 	}
-	spMap := createSupperSecretSelectivePatch(cfg.Spec.Secrets)
+	spMap, err := createSupperSecretSelectivePatch(cfg.Spec.Secrets)
+	if err != nil {
+		t.Fatalf("error creating map of service selective patches")
+	}
 	sp := spMap["qliksense"]
 	if sp.ApiVersion != "qlik.com/v1" {
 		t.Fail()
@@ -38,7 +43,7 @@ func TestCreateSupperSecretSelectivePatch(t *testing.T) {
 			"name": "qliksense-secrets",
 		},
 		StringData: map[string]string{
-			"mongoDbUri": "mongo://mongo:3307",
+			"mongoDbUri": `(( (ds "data").mongoDbUri ))`,
 		},
 	}
 	ss2 := &config.SupperSecret{}
@@ -61,17 +66,27 @@ func TestProcessCrSecrets(t *testing.T) {
 	td, dir := createManifestsStructure(t)
 
 	cfg.Spec.ManifestsRoot = dir
-	ProcessSecrets(cfg.Spec)
-	content, _ := ioutil.ReadFile(filepath.Join(dir, ".operator", "secrets", "qliksense.yaml"))
+
+	ejsonPublicKey, _, err := ejson.GenerateKeypair()
+	if err != nil {
+		t.Fatalf("error generating ejson keys")
+	}
+
+	err = ProcessSecrets(cfg.Spec, ejsonPublicKey)
+	if err != nil {
+		t.Fatalf("unexpected error processing secrets")
+	}
+
+	content, _ := ioutil.ReadFile(filepath.Join(dir, ".operator", "secrets", "qliksense", "selectivepatch.yaml"))
 
 	sp := getSuperSecretSPTemplate("qliksense")
 	scm := getSuperSecretTemplate("qliksense")
 	scm.StringData = map[string]string{
-		"mongoDbUri": "mongo://mongo:3307",
+		"mongoDbUri": `(( (ds "data").mongoDbUri ))`,
 	}
 	phb, _ := yaml.Marshal(scm)
 	sp.Patches = []types.Patch{
-		types.Patch{
+		{
 			Patch:  string(phb),
 			Target: getSelector("SuperSecret", "qliksense"),
 		},
