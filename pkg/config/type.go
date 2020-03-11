@@ -18,6 +18,7 @@ type CRSpec struct {
 	RotateKeys       string                `json:"rotateKeys,omitempty" yaml:"rotateKeys,omitempty"`
 	StorageClassName string                `json:"storageClassName,omitempty" yaml:"storageClassName,omitempty"`
 	Git              *Repo                 `json:"git,omitempty" yaml:"git,omitempty"`
+	GitOps           *GitOps               `json:"gitOps,omitempty" yaml:"gitOps,omitempty"`
 }
 
 type KApiCr struct {
@@ -72,4 +73,11 @@ type Repo struct {
 	Password    string `json:"password,omitempty" yaml:"password,omitempty"`
 	AccessToken string `json:"accessToken,omitempty" yaml:"accessToken,omitempty"`
 	SecretName  string `json:"secretName,omitempty" yaml:"secretName,omitempty"`
+}
+
+type GitOps struct {
+	Enabled     bool   `json:"enabled,omitempty" yaml:"enabled,omitempty"`
+	Schedule    string `json:"schedule,omitempty" yaml:"schedule,omitempty"`
+	WatchBranch string `json:"watchBranch,omitempty" yaml:"watchBranch,omitempty"`
+	Image       string `json:"image,omitempty" yaml:"image,omitempty"`
 }
