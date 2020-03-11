@@ -78,6 +78,6 @@ type Repo struct {
 type Ops struct {
 	Enabled     string `json:"enabled,omitempty" yaml:"enabled,omitempty"`
 	Schedule    string `json:"schedule,omitempty" yaml:"schedule,omitempty"`
-	WatchBranch string `json:"watchBranch,omitempty" yaml:"schedule,omitempty"`
+	WatchBranch string `json:"watchBranch,omitempty" yaml:"watchBranch,omitempty"`
 	Image       string `json:"image,omitempty" yaml:"image,omitempty"`
 }
