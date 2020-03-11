@@ -1,64 +1,103 @@
 package qust
 
 import (
-	"log"
+	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"github.com/pkg/errors"
 
 	"github.com/qlik-oss/k-apis/pkg/config"
 	"gopkg.in/yaml.v2"
 	"sigs.k8s.io/kustomize/api/types"
 )
 
-func ProcessSecrets(cr *config.CRSpec) {
+const serviceSecretKustomizationFileYaml = `apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - selectivepatch.yaml
+transformers:
+  - ../gomplate.yaml
+`
+
+const patchedSecretsGomplateFileYaml = `apiVersion: qlik.com/v1
+kind: Gomplate
+metadata:
+  name: patched-secrets-gomplate
+  labels:
+    key: gomplate
+dataSource:
+  ejson:
+    filePath: edata.json
+`
+
+func ProcessSecrets(cr *config.CRSpec, ejsonPublicKey string) error {
 	baseSecretDir := filepath.Join(cr.GetManifestsRoot(), operatorPatchBaseFolder, "secrets")
 	if _, err := os.Stat(baseSecretDir); os.IsNotExist(err) {
-		log.Panic(baseSecretDir + " does not exist ")
-	}
-	pm := createSupperSecretSelectivePatch(cr.Secrets)
-	for svc, sps := range pm {
-		fpath := filepath.Join(baseSecretDir, svc+".yaml")
-		fileHand, _ := os.Create(fpath)
-		YamlToWriter(fileHand, sps)
-		err := addResourceToKustomization(svc+".yaml", filepath.Join(baseSecretDir, "kustomization.yaml"))
-		if err != nil {
-			log.Println("Cannot process secrets", err)
+		return fmt.Errorf("%v does not exist", baseSecretDir)
+	} else if err := ioutil.WriteFile(filepath.Join(baseSecretDir, "gomplate.yaml"), []byte(patchedSecretsGomplateFileYaml), os.ModePerm); err != nil {
+		return errors.Wrapf(err, "error writing out the secrets' gomplate.yaml file: %v", filepath.Join(baseSecretDir, "gomplate.yaml"))
+	} else if pm, err := createSupperSecretSelectivePatch(cr.Secrets); err != nil {
+		return errors.Wrap(err, "error creating the selective patches map")
+	} else {
+		for svc, sps := range pm {
+			dir := filepath.Join(baseSecretDir, svc)
+			if err := addResourceToKustomization(svc, filepath.Join(baseSecretDir, "kustomization.yaml")); err != nil {
+				return errors.Wrapf(err, "error adding resource: %v to kustomization file: %v", svc, filepath.Join(baseSecretDir, "kustomization.yaml"))
+			} else if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+				return errors.Wrapf(err, "error creating directory: %v", dir)
+			} else if err := ioutil.WriteFile(filepath.Join(dir, "kustomization.yaml"), []byte(serviceSecretKustomizationFileYaml), os.ModePerm); err != nil {
+				return errors.Wrapf(err, "error writing out service secret kustomization.yaml file: %v", filepath.Join(dir, "kustomization.yaml"))
+			} else if err := writeSelectivePatchFile(dir, sps); err != nil {
+				return errors.Wrap(err, "error writing out secret selective patch")
+			} else if err := writeEjsonFile(dir, cr.Secrets[svc], ejsonPublicKey); err != nil {
+				return errors.Wrap(err, "error writing out secret selective patch")
+			}
 		}
+	}
+	return nil
+}
+
+func writeEjsonFile(dir string, secrets config.NameValues, ejsonPublicKey string) error {
+	ejsonDataMap := make(map[string]string)
+	ejsonDataMap["_public_key"] = ejsonPublicKey
+	for _, secret := range secrets {
+		ejsonDataMap[secret.Name] = secret.GetSecretValue()
+	}
+	return writeToEjsonFile(ejsonDataMap, filepath.Join(dir, "edata.json"))
+}
+
+func writeSelectivePatchFile(dir string, sps *config.SelectivePatch) error {
+	if selectivePatchData, err := yaml.Marshal(sps); err != nil {
+		return err
+	} else {
+		return ioutil.WriteFile(filepath.Join(dir, "selectivepatch.yaml"), selectivePatchData, os.ModePerm)
 	}
 }
 
 // create a selectivepatch map for each service for a secretKey
-func createSupperSecretSelectivePatch(sec map[string]config.NameValues) map[string]*config.SelectivePatch {
+func createSupperSecretSelectivePatch(sec map[string]config.NameValues) (map[string]*config.SelectivePatch, error) {
 	spMap := make(map[string]*config.SelectivePatch)
 	for svc, data := range sec {
-		sp := getSuperSecretSPTemplate(svc)
+		spMap[svc] = getSuperSecretSPTemplate(svc)
 		for _, conf := range data {
-			p := getSecretPatchBody(svc, conf)
-			sp.Patches = []types.Patch{p}
-			mergeSelectivePatches(sp, spMap[svc])
-			spMap[svc] = sp
+			sp := getSuperSecretSPTemplate(svc)
+			sp.Patches = []types.Patch{getSecretPatchBody(svc, conf)}
+			if _, err := mergeSelectivePatches(spMap[svc], sp); err != nil {
+				return nil, err
+			}
 		}
 	}
-	return spMap
+	return spMap, nil
 }
 
 // create a patch section to be added to the selective patch
 func getSecretPatchBody(svc string, nv config.NameValue) types.Patch {
 	ph := getSuperSecretTemplate(svc)
 	ph.StringData = map[string]string{
-		nv.Name: nv.GetSecretValue(),
+		nv.Name: fmt.Sprintf(`(( (ds "data").%s ))`, nv.Name),
 	}
-	// ph := `
-	// 	apiVersion: qlik.com/v1
-	// 	kind: SuperSecret
-	// 	metadata:
-	// 		name: ` + svc + `-secrets
-	// 	data:
-	// 		` + dataKey + `: ` + value
-
-	// target:
-	//   kind: SuperSecret
-	//   labelSelector: "app=" + svc,
 	phb, _ := yaml.Marshal(ph)
 	p1 := types.Patch{
 		Patch:  string(phb),

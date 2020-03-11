@@ -92,9 +92,9 @@ func overrideKeysEjwksJsonFile(cr *config.CRSpec, services []*serviceT, ejsonPub
 	return nil
 }
 
-func writeToEjsonFile(eJwksMap map[string]string, filePath string) error {
+func writeToEjsonFile(ejsonDataMap map[string]string, filePath string) error {
 	var encryptedBuffer bytes.Buffer
-	if jsonBytes, err := json.Marshal(eJwksMap); err != nil {
+	if jsonBytes, err := json.Marshal(ejsonDataMap); err != nil {
 		return err
 	} else if _, err := ejson.Encrypt(bytes.NewBuffer(jsonBytes), &encryptedBuffer); err != nil {
 		return err
