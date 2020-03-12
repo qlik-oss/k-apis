@@ -108,7 +108,7 @@ func getSecretPatchBody(svc string, nv config.NameValue) types.Patch {
 
 // a SelectivePatch object with service name in it
 func getSuperSecretSPTemplate(svc string) *config.SelectivePatch {
-	return getSelectivePatchTemplate(svc + "-operator-secrets")
+	return getSelectivePatchTemplate(svc + "-generated-operator-secrets")
 }
 
 func getSuperSecretTemplate(svc string) *config.SupperSecret {

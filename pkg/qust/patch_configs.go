@@ -65,7 +65,7 @@ func getConfigMapPatchBody(dataKey, svc, value string) types.Patch {
 
 // a SelectivePatch object with service name in it
 func getSuperConfigSPTemplate(svc string) *config.SelectivePatch {
-	return getSelectivePatchTemplate(svc + "-operator-configs")
+	return getSelectivePatchTemplate(svc + "-generated-operator-configs")
 }
 
 func getSuperConfigMapTemplate(svc string) *config.SupperConfigMap {
