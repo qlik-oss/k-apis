@@ -17,19 +17,22 @@ func TestCreateSupperConfigSelectivePatch(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error reading config from file")
 	}
-	spMap := createSupperConfigSelectivePatch(cfg.Spec.Configs)
+	spMap, err := createSupperConfigSelectivePatch(cfg.Spec.Configs)
+	if err != nil {
+		t.Fatalf("error creating map of service selective patches")
+	}
 	sp := spMap["qliksense"]
 	if sp.ApiVersion != "qlik.com/v1" {
-		t.Fail()
+		t.Fatal("ApiVersion wasn't what we expected")
 	}
 	if sp.Kind != "SelectivePatch" {
-		t.Fail()
+		t.Fatal("Kind wasn't what we expected")
 	}
-	if sp.Metadata["name"] != "qliksense-operator-configs" {
-		t.Fail()
+	if sp.Metadata["name"] != "qliksense-generated-operator-configs" {
+		t.Fatal(`Metadata["name"] wasn't what we expected`)
 	}
 	if sp.Patches[0].Target.LabelSelector != "app=qliksense" || sp.Patches[0].Target.Kind != "SuperConfigMap" {
-		t.Fail()
+		t.Fatal(`patch LabelSelector or Kind wasn't what we expected`)
 	}
 	scm := &config.SupperConfigMap{
 		ApiVersion: "qlik.com/v1",
@@ -44,7 +47,7 @@ func TestCreateSupperConfigSelectivePatch(t *testing.T) {
 	scm2 := &config.SupperConfigMap{}
 	yaml.Unmarshal([]byte(sp.Patches[0].Patch), scm2)
 	if !reflect.DeepEqual(scm, scm2) {
-		t.Fail()
+		t.Fatalf("expected %v to equal %v", scm, scm2)
 	}
 }
 
