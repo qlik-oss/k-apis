@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"sort"
 	"strings"
 	"testing"
 	"time"
@@ -108,5 +109,66 @@ func TestDiscardAllUnstagedChanges(t *testing.T) {
 	} else {
 		fmt.Print("successfully discarded all unstaged changes\n")
 		_ = os.RemoveAll(tmpDir)
+	}
+}
+
+func TestGetRemoteReferences(t *testing.T) {
+	repo := "https://github.com/qlik-oss/qliksense-k8s"
+
+	tmpDir, err := ioutil.TempDir("", "")
+	if err != nil {
+		t.Fatalf("error creating temp dir: %v", err)
+	} else {
+		//fmt.Printf("created tmp dir: %v\n", tmpDir)
+		defer os.RemoveAll(tmpDir)
+	}
+
+	repoPath := path.Join(tmpDir, "repo")
+
+	r, err := CloneRepository(repoPath, repo, nil)
+	if err != nil {
+		t.Fatalf("error cloning repo: %v, error: %v", repo, err)
+	}
+
+	remoteReferencesList, err := GetRemoteReferences(r, nil, true)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if len(remoteReferencesList) != 1 {
+		t.Fatal("expected remoteReferencesList to have size 1")
+	}
+
+	if len(remoteReferencesList[0].branches) < 1 {
+		t.Fatal("expected there to be at least 1 branch")
+	}
+
+	t.Logf("branches: %v\n", remoteReferencesList[0].branches)
+	foundMaster := false
+	for _, branch := range remoteReferencesList[0].branches {
+		if branch == "master" {
+			foundMaster = true
+		}
+	}
+	if !foundMaster {
+		t.Fatal("expected the list of branches to contain master")
+	}
+
+	originalBranchesList := strings.Join(remoteReferencesList[0].branches, ",")
+	sort.Strings(remoteReferencesList[0].branches)
+	sortedBranchesList := strings.Join(remoteReferencesList[0].branches, ",")
+	if originalBranchesList != sortedBranchesList {
+		t.Fatal("expected branches to be sorted")
+	}
+
+	if len(remoteReferencesList[0].tags) < 1 {
+		t.Fatal("expected there to be at least 1 branch")
+	}
+	t.Logf("tags: %v\n", remoteReferencesList[0].tags)
+	originalTagsList := strings.Join(remoteReferencesList[0].tags, ",")
+	sort.Strings(remoteReferencesList[0].tags)
+	sortedTagsList := strings.Join(remoteReferencesList[0].tags, ",")
+	if originalTagsList != sortedTagsList {
+		t.Fatal("expected tags to be sorted")
 	}
 }
