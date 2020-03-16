@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"sort"
 	"strings"
 	"testing"
 	"time"
@@ -140,22 +141,34 @@ func TestGetRemoteReferences(t *testing.T) {
 
 	if len(remoteReferencesList[0].branches) < 1 {
 		t.Fatal("expected there to be at least 1 branch")
-	} else {
-		t.Logf("branches: %v\n", remoteReferencesList[0].branches)
-		foundMaster := false
-		for _, branch := range remoteReferencesList[0].branches {
-			if branch == "master" {
-				foundMaster = true
-			}
+	}
+
+	t.Logf("branches: %v\n", remoteReferencesList[0].branches)
+	foundMaster := false
+	for _, branch := range remoteReferencesList[0].branches {
+		if branch == "master" {
+			foundMaster = true
 		}
-		if !foundMaster {
-			t.Fatal("expected the list of branches to contain master")
-		}
+	}
+	if !foundMaster {
+		t.Fatal("expected the list of branches to contain master")
+	}
+
+	originalBranchesList := strings.Join(remoteReferencesList[0].branches, ",")
+	sort.Strings(remoteReferencesList[0].branches)
+	sortedBranchesList := strings.Join(remoteReferencesList[0].branches, ",")
+	if originalBranchesList != sortedBranchesList {
+		t.Fatal("expected branches to be sorted")
 	}
 
 	if len(remoteReferencesList[0].tags) < 1 {
 		t.Fatal("expected there to be at least 1 branch")
-	} else {
-		t.Logf("tags: %v\n", remoteReferencesList[0].tags)
+	}
+	t.Logf("tags: %v\n", remoteReferencesList[0].tags)
+	originalTagsList := strings.Join(remoteReferencesList[0].tags, ",")
+	sort.Strings(remoteReferencesList[0].tags)
+	sortedTagsList := strings.Join(remoteReferencesList[0].tags, ",")
+	if originalTagsList != sortedTagsList {
+		t.Fatal("expected tags to be sorted")
 	}
 }
