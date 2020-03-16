@@ -157,3 +157,40 @@ func DiscardAllUnstagedChanges(r *git.Repository) error {
 		return workTree.Checkout(&git.CheckoutOptions{Hash: refHead.Hash(), Force: true})
 	}
 }
+
+type RemoteReferences struct {
+	name     string
+	branches []string
+	tags     []string
+}
+
+func GetRemoteReferences(r *git.Repository, auth transport.AuthMethod) (remoteReferencesList []*RemoteReferences, err error) {
+	listOptions := &git.ListOptions{}
+	if auth != nil {
+		listOptions.Auth = auth
+	}
+	if remotes, err := r.Remotes(); err != nil {
+		return nil, err
+	} else {
+		for _, remote := range remotes {
+			if refs, err := remote.List(listOptions); err != nil {
+				return nil, err
+			} else {
+				remoteReferences := &RemoteReferences{
+					name:     remote.Config().Name,
+					branches: []string{},
+					tags:     []string{},
+				}
+				remoteReferencesList = append(remoteReferencesList, remoteReferences)
+				for _, ref := range refs {
+					if ref.Name().IsBranch() {
+						remoteReferences.branches = append(remoteReferences.branches, ref.Name().Short())
+					} else if ref.Name().IsTag() {
+						remoteReferences.tags = append(remoteReferences.tags, ref.Name().Short())
+					}
+				}
+			}
+		}
+		return remoteReferencesList, nil
+	}
+}
