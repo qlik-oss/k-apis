@@ -3,6 +3,7 @@ package git
 import (
 	"crypto/rand"
 	"fmt"
+	"sort"
 	"time"
 
 	"gopkg.in/src-d/go-git.v4"
@@ -164,7 +165,7 @@ type RemoteReferences struct {
 	tags     []string
 }
 
-func GetRemoteReferences(r *git.Repository, auth transport.AuthMethod) (remoteReferencesList []*RemoteReferences, err error) {
+func GetRemoteReferences(r *git.Repository, auth transport.AuthMethod, sortRefs bool) (remoteReferencesList []*RemoteReferences, err error) {
 	listOptions := &git.ListOptions{}
 	if auth != nil {
 		listOptions.Auth = auth
@@ -188,6 +189,10 @@ func GetRemoteReferences(r *git.Repository, auth transport.AuthMethod) (remoteRe
 					} else if ref.Name().IsTag() {
 						remoteReferences.tags = append(remoteReferences.tags, ref.Name().Short())
 					}
+				}
+				if sortRefs {
+					sort.Strings(remoteReferences.branches)
+					sort.Strings(remoteReferences.tags)
 				}
 			}
 		}

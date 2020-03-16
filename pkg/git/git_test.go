@@ -129,7 +129,7 @@ func TestGetRemoteReferences(t *testing.T) {
 		t.Fatalf("error cloning repo: %v, error: %v", repo, err)
 	}
 
-	remoteReferencesList, err := GetRemoteReferences(r, nil)
+	remoteReferencesList, err := GetRemoteReferences(r, nil, true)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
