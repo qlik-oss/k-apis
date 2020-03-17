@@ -17,8 +17,8 @@ import (
 )
 
 type BackupDir struct {
-	Directory    string
-	ConfigmapKey string
+	Directory string
+	Key       string
 }
 
 const (
@@ -27,53 +27,53 @@ const (
 	defaultNamespaceName     = "default"
 )
 
-func Backup(kubeconfigPath, configMapName, namespaceName, releaseLabelValue string, backupDirs []BackupDir) error {
+func Backup(kubeconfigPath, secretName, namespaceName, releaseLabelValue string, backupDirs []BackupDir) error {
 	if namespaceName == "" {
 		namespaceName = defaultNamespaceName
 	}
 	if releaseLabelValue == "" {
 		releaseLabelValue = defaultReleaseLabelValue
 	}
-	configMapsClient, err := getConfigMapsClient(kubeconfigPath, namespaceName)
+	secretsClient, err := getSecretsClient(kubeconfigPath, namespaceName)
 	if err != nil {
 		return err
 	}
 
-	configMapBinaryData, err := getConfigMapBinaryData(backupDirs)
+	binaryData, err := getBinaryData(backupDirs)
 	if err != nil {
 		return err
 	}
 
-	configMap, err := configMapsClient.Get(configMapName, metaV1.GetOptions{})
+	secret, err := secretsClient.Get(secretName, metaV1.GetOptions{})
 	if err != nil && kubeApiErrors.IsNotFound(err) {
 		//doesn't exist, create:
-		_, err = configMapsClient.Create(&v1.ConfigMap{
+		_, err = secretsClient.Create(&v1.Secret{
 			ObjectMeta: metaV1.ObjectMeta{
-				Name:      configMapName,
+				Name:      secretName,
 				Namespace: namespaceName,
 				Labels:    map[string]string{releaseLabelKey: releaseLabelValue},
 			},
-			BinaryData: configMapBinaryData,
+			Data: binaryData,
 		})
 	} else if err == nil {
 		//exists, update:
-		configMap.BinaryData = configMapBinaryData
-		_, err = configMapsClient.Update(configMap)
+		secret.Data = binaryData
+		_, err = secretsClient.Update(secret)
 	}
 	return err
 }
 
-func Restore(kubeconfigPath, configMapName, namespaceName string, backupInfos []BackupDir) error {
+func Restore(kubeconfigPath, secretName, namespaceName string, backupInfos []BackupDir) error {
 	if namespaceName == "" {
 		namespaceName = defaultNamespaceName
 	}
 
-	configMapsClient, err := getConfigMapsClient(kubeconfigPath, namespaceName)
+	secretsClient, err := getSecretsClient(kubeconfigPath, namespaceName)
 	if err != nil {
 		return err
 	}
 
-	configMap, err := configMapsClient.Get(configMapName, metaV1.GetOptions{})
+	secret, err := secretsClient.Get(secretName, metaV1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -88,9 +88,9 @@ func Restore(kubeconfigPath, configMapName, namespaceName string, backupInfos []
 	tarGzArchiver.OverwriteExisting = true
 
 	for _, backupInfo := range backupInfos {
-		archiveFilePath := path.Join(tmpDir, fmt.Sprintf("%v.tar.gz", backupInfo.ConfigmapKey))
-		if data, ok := configMap.BinaryData[backupInfo.ConfigmapKey]; !ok {
-			return fmt.Errorf("configmap %v in namespace: %v does not have binaryData for key: %v", configMapName, namespaceName, backupInfo.ConfigmapKey)
+		archiveFilePath := path.Join(tmpDir, fmt.Sprintf("%v.tar.gz", backupInfo.Key))
+		if data, ok := secret.Data[backupInfo.Key]; !ok {
+			return fmt.Errorf("secret %v in namespace: %v does not have binaryData for key: %v", secretName, namespaceName, backupInfo.Key)
 		} else if err := ioutil.WriteFile(archiveFilePath, data, os.ModePerm); err != nil {
 			return err
 		} else if err := tarGzArchiver.Unarchive(archiveFilePath, backupInfo.Directory); err != nil {
@@ -101,7 +101,7 @@ func Restore(kubeconfigPath, configMapName, namespaceName string, backupInfos []
 	return nil
 }
 
-func getConfigMapsClient(kubeconfigPath string, namespaceName string) (clientV1.ConfigMapInterface, error) {
+func getSecretsClient(kubeconfigPath string, namespaceName string) (clientV1.SecretInterface, error) {
 	config, err := clientcmd.BuildConfigFromFlags("", kubeconfigPath)
 	if err != nil {
 		return nil, err
@@ -112,20 +112,20 @@ func getConfigMapsClient(kubeconfigPath string, namespaceName string) (clientV1.
 		return nil, err
 	}
 
-	configMapsClient := clientSet.CoreV1().ConfigMaps(namespaceName)
-	return configMapsClient, nil
+	secretsClient := clientSet.CoreV1().Secrets(namespaceName)
+	return secretsClient, nil
 }
 
-func getConfigMapBinaryData(backupDirs []BackupDir) (map[string][]byte, error) {
+func getBinaryData(backupDirs []BackupDir) (map[string][]byte, error) {
 	tmpDir, err := ioutil.TempDir("", "")
 	if err != nil {
 		return nil, err
 	}
 	defer os.RemoveAll(tmpDir)
 
-	configMapBinaryData := make(map[string][]byte)
+	binaryData := make(map[string][]byte)
 	for _, backupDir := range backupDirs {
-		archiveFilePath := path.Join(tmpDir, fmt.Sprintf("%v.tar.gz", backupDir.ConfigmapKey))
+		archiveFilePath := path.Join(tmpDir, fmt.Sprintf("%v.tar.gz", backupDir.Key))
 		var archiveSources []string
 		if err := filepath.Walk(backupDir.Directory, func(fpath string, info os.FileInfo, err error) error {
 			if err != nil {
@@ -142,8 +142,8 @@ func getConfigMapBinaryData(backupDirs []BackupDir) (map[string][]byte, error) {
 		} else if data, err := ioutil.ReadFile(archiveFilePath); err != nil {
 			return nil, err
 		} else {
-			configMapBinaryData[backupDir.ConfigmapKey] = data
+			binaryData[backupDir.Key] = data
 		}
 	}
-	return configMapBinaryData, nil
+	return binaryData, nil
 }

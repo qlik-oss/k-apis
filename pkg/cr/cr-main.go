@@ -21,8 +21,8 @@ import (
 )
 
 const (
-	defaultEjsonKeydir  = "/opt/ejson/keys"
-	backupConfigMapName = "qliksense-operator-state-backup"
+	defaultEjsonKeydir      = "/opt/ejson/keys"
+	defaultBackupObjectName = "operator-state-backup"
 )
 
 func GeneratePatches(cr *config.KApiCr, kubeConfigPath string) {
@@ -143,9 +143,9 @@ func createPatches(cr *config.KApiCr, kubeConfigPath string) error {
 			return errors.Wrap(err, "error generating application keys")
 		} else {
 			log.Println("backing up keys to the cluster")
-			if err := state.Backup(kubeConfigPath, backupConfigMapName, cr.GetObjectMeta().GetNamespace(), cr.GetObjectMeta().GetName(), []state.BackupDir{
-				{ConfigmapKey: "operator-keys", Directory: filepath.Join(cr.Spec.GetManifestsRoot(), ".operator/keys")},
-				{ConfigmapKey: "ejson-keys", Directory: getEjsonKeyDir(defaultEjsonKeydir)},
+			if err := state.Backup(kubeConfigPath, getBackupObjectName(cr), cr.GetObjectMeta().GetNamespace(), cr.GetName(), []state.BackupDir{
+				{Key: "operator-keys", Directory: filepath.Join(cr.Spec.GetManifestsRoot(), ".operator/keys")},
+				{Key: "ejson-keys", Directory: getEjsonKeyDir(defaultEjsonKeydir)},
 			}); err != nil {
 				return errors.Wrap(err, "error backing up keys to the cluster")
 			}
@@ -154,8 +154,8 @@ func createPatches(cr *config.KApiCr, kubeConfigPath string) error {
 		log.Println("no keys operations")
 	default:
 		log.Println("restoring keys from the cluster")
-		if err := state.Restore(kubeConfigPath, backupConfigMapName, cr.GetObjectMeta().GetNamespace(), []state.BackupDir{
-			{ConfigmapKey: "operator-keys", Directory: filepath.Join(cr.Spec.GetManifestsRoot(), ".operator/keys")},
+		if err := state.Restore(kubeConfigPath, getBackupObjectName(cr), cr.GetObjectMeta().GetNamespace(), []state.BackupDir{
+			{Key: "operator-keys", Directory: filepath.Join(cr.Spec.GetManifestsRoot(), ".operator/keys")},
 		}); err != nil {
 			return errors.Wrap(err, "error restoring keys from the cluster")
 		}
@@ -184,6 +184,10 @@ func processEjsonKeys(cr *config.KApiCr, defaultEjsonKeydir string, kubeConfigPa
 		}
 	}
 	return ejsonPublicKey, ejsonPrivateKey, err
+}
+
+func getBackupObjectName(cr *config.KApiCr) string {
+	return fmt.Sprintf("%s-%s", cr.GetName(), defaultBackupObjectName)
 }
 
 func getEjsonKeyDir(defaultKeyDir string) string {
@@ -226,8 +230,8 @@ func cleanEjsonKeysDir(keyDir string) error {
 }
 
 func restoreEjsonKeysFromCluster(cr *config.KApiCr, defaultKeyDir string, kubeConfigPath string) (ejsonPublicKey, ejsonPrivateKey string, err error) {
-	if err := state.Restore(kubeConfigPath, backupConfigMapName, cr.GetObjectMeta().GetNamespace(), []state.BackupDir{
-		{ConfigmapKey: "ejson-keys", Directory: getEjsonKeyDir(defaultKeyDir)},
+	if err := state.Restore(kubeConfigPath, getBackupObjectName(cr), cr.GetObjectMeta().GetNamespace(), []state.BackupDir{
+		{Key: "ejson-keys", Directory: getEjsonKeyDir(defaultKeyDir)},
 	}); err != nil {
 		log.Printf("error restoring keys data from the cluster, error: %v\n", err)
 		return "", "", err
