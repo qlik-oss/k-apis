@@ -130,7 +130,17 @@ func TestGetRemoteReferences(t *testing.T) {
 		t.Fatalf("error cloning repo: %v, error: %v", repo, err)
 	}
 
-	remoteReferencesList, err := GetRemoteReferences(r, nil, true)
+	remoteReferencesList, err := GetRemoteRefs(r, nil,
+		&RemoteRefConstraints{
+			Include:   true,
+			Sort:      true,
+			SortOrder: RefSortOrderDescending,
+		},
+		&RemoteRefConstraints{
+			Include:   true,
+			Sort:      true,
+			SortOrder: RefSortOrderAscending,
+		})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -139,13 +149,13 @@ func TestGetRemoteReferences(t *testing.T) {
 		t.Fatal("expected remoteReferencesList to have size 1")
 	}
 
-	if len(remoteReferencesList[0].branches) < 1 {
+	if len(remoteReferencesList[0].Branches) < 1 {
 		t.Fatal("expected there to be at least 1 branch")
 	}
 
-	t.Logf("branches: %v\n", remoteReferencesList[0].branches)
+	t.Logf("branches: %v\n", remoteReferencesList[0].Branches)
 	foundMaster := false
-	for _, branch := range remoteReferencesList[0].branches {
+	for _, branch := range remoteReferencesList[0].Branches {
 		if branch == "master" {
 			foundMaster = true
 		}
@@ -154,21 +164,15 @@ func TestGetRemoteReferences(t *testing.T) {
 		t.Fatal("expected the list of branches to contain master")
 	}
 
-	originalBranchesList := strings.Join(remoteReferencesList[0].branches, ",")
-	sort.Strings(remoteReferencesList[0].branches)
-	sortedBranchesList := strings.Join(remoteReferencesList[0].branches, ",")
-	if originalBranchesList != sortedBranchesList {
-		t.Fatal("expected branches to be sorted")
+	if !sort.IsSorted(sort.StringSlice(remoteReferencesList[0].Branches)) {
+		t.Fatal("expected branches to be sorted in ascending order")
 	}
 
-	if len(remoteReferencesList[0].tags) < 1 {
+	if len(remoteReferencesList[0].Tags) < 1 {
 		t.Fatal("expected there to be at least 1 branch")
 	}
-	t.Logf("tags: %v\n", remoteReferencesList[0].tags)
-	originalTagsList := strings.Join(remoteReferencesList[0].tags, ",")
-	sort.Strings(remoteReferencesList[0].tags)
-	sortedTagsList := strings.Join(remoteReferencesList[0].tags, ",")
-	if originalTagsList != sortedTagsList {
-		t.Fatal("expected tags to be sorted")
+	t.Logf("tags: %v\n", remoteReferencesList[0].Tags)
+	if !sort.IsSorted(sort.Reverse(sort.StringSlice(remoteReferencesList[0].Tags))) {
+		t.Fatal("expected tags to be sorted in reverse order")
 	}
 }

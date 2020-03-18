@@ -159,13 +159,38 @@ func DiscardAllUnstagedChanges(r *git.Repository) error {
 	}
 }
 
-type RemoteReferences struct {
-	name     string
-	branches []string
-	tags     []string
+type RemoteRefs struct {
+	Name     string
+	Branches []string
+	Tags     []string
 }
 
-func GetRemoteReferences(r *git.Repository, auth transport.AuthMethod, sortRefs bool) (remoteReferencesList []*RemoteReferences, err error) {
+type RefSortOrder byte
+
+const (
+	RefSortOrderAscending RefSortOrder = iota
+	RefSortOrderDescending
+)
+
+type RemoteRefConstraints struct {
+	Include   bool
+	Sort      bool
+	SortOrder RefSortOrder
+}
+
+func sortStringSlice(data *[]string, sortOrder RefSortOrder) {
+	if sortOrder == RefSortOrderAscending {
+		sort.Sort(sort.StringSlice(*data))
+	} else {
+		sort.Sort(sort.Reverse(sort.StringSlice(*data)))
+	}
+}
+
+func GetRemoteRefs(
+	r *git.Repository,
+	auth transport.AuthMethod,
+	tagConstraints *RemoteRefConstraints,
+	branchConstraints *RemoteRefConstraints) (remoteRefsList []*RemoteRefs, err error) {
 	listOptions := &git.ListOptions{}
 	if auth != nil {
 		listOptions.Auth = auth
@@ -177,25 +202,27 @@ func GetRemoteReferences(r *git.Repository, auth transport.AuthMethod, sortRefs 
 			if refs, err := remote.List(listOptions); err != nil {
 				return nil, err
 			} else {
-				remoteReferences := &RemoteReferences{
-					name:     remote.Config().Name,
-					branches: []string{},
-					tags:     []string{},
+				remoteReferences := &RemoteRefs{
+					Name:     remote.Config().Name,
+					Branches: []string{},
+					Tags:     []string{},
 				}
-				remoteReferencesList = append(remoteReferencesList, remoteReferences)
+				remoteRefsList = append(remoteRefsList, remoteReferences)
 				for _, ref := range refs {
-					if ref.Name().IsBranch() {
-						remoteReferences.branches = append(remoteReferences.branches, ref.Name().Short())
-					} else if ref.Name().IsTag() {
-						remoteReferences.tags = append(remoteReferences.tags, ref.Name().Short())
+					if tagConstraints.Include && ref.Name().IsTag() {
+						remoteReferences.Tags = append(remoteReferences.Tags, ref.Name().Short())
+					} else if branchConstraints.Include && ref.Name().IsBranch() {
+						remoteReferences.Branches = append(remoteReferences.Branches, ref.Name().Short())
 					}
 				}
-				if sortRefs {
-					sort.Strings(remoteReferences.branches)
-					sort.Strings(remoteReferences.tags)
+				if tagConstraints.Include && tagConstraints.Sort {
+					sortStringSlice(&remoteReferences.Tags, tagConstraints.SortOrder)
+				}
+				if branchConstraints.Include && branchConstraints.Sort {
+					sortStringSlice(&remoteReferences.Branches, branchConstraints.SortOrder)
 				}
 			}
 		}
-		return remoteReferencesList, nil
+		return remoteRefsList, nil
 	}
 }
