@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -19,6 +20,8 @@ func setup(t *testing.T) io.Reader {
   spec:
     profile: base
     manifestsRoot: "."
+    git:
+      accessToken: 12345
     configs:
       qliksense:
       - name: acceptEULA
@@ -186,6 +189,17 @@ func TestGetFromSecrets(t *testing.T) {
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
 	if err != nil {
+		t.Fail()
+		t.Log(err)
+	}
+}
+
+func TestAccessTokenRetrieval(t *testing.T) {
+	reader := setup(t)
+	cfg, _ := ReadCRSpecFromFile(reader)
+	cfg.Spec.AddToSecrets("qliksense2", "mongo", "tadadaa", "")
+	fmt.Print(cfg.Spec.Git.SecretName)
+	if _, err := cfg.Spec.Git.GetAccessToken(); err != nil {
 		t.Fail()
 		t.Log(err)
 	}
