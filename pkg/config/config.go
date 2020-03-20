@@ -198,7 +198,7 @@ func (cr *CRSpec) GetProfileDir() string {
 }
 
 func (repo *Repo) GetAccessToken() (string, error) {
-	if repo.SecretName != "" {
+	if &repo.SecretName == nil {
 		cmd := exec.Command("kubectl", "get", "secrets", repo.SecretName, "-o", "go-template", "--template='{{index .data accessToken}}'", "|", "base64", "-d")
 		var out bytes.Buffer
 		cmd.Stdout = &out
@@ -208,7 +208,7 @@ func (repo *Repo) GetAccessToken() (string, error) {
 			return "", err
 		}
 		return out.String(), nil
-	} else if repo.AccessToken != "" {
+	} else if &repo.AccessToken != nil {
 		return repo.AccessToken, nil
 	} else {
 		return "", nil
