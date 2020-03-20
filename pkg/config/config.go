@@ -196,3 +196,21 @@ func (cr *CRSpec) GetManifestsRoot() string {
 func (cr *CRSpec) GetProfileDir() string {
 	return filepath.Join("manifests", cr.Profile)
 }
+
+func (repo *Repo) GetAccessToken() (string, error) {
+	if repo.SecretName != "" {
+		cmd := exec.Command("kubectl", "get", "secrets", repo.SecretName, "-o", "go-template", "--template='{{index .data accessToken}}'", "|", "base64", "-d")
+		var out bytes.Buffer
+		cmd.Stdout = &out
+		cmd.Stderr = os.Stderr
+		err := cmd.Run()
+		if err != nil {
+			return "", err
+		}
+		return out.String(), nil
+	} else if repo.AccessToken != "" {
+		return repo.AccessToken, nil
+	} else {
+		return "", nil
+	}
+}
