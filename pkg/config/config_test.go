@@ -21,7 +21,6 @@ func setup(t *testing.T) io.Reader {
     manifestsRoot: "."
     git:
       accessToken: 12345
-      secretName: mongo
     configs:
       qliksense:
       - name: acceptEULA
@@ -138,7 +137,7 @@ func TestAddToSecrets(t *testing.T) {
 func TestReadFromKubernetesSecret(t *testing.T) {
 	// it is a special test, it requires kubectl configured.
 	// it will not run part of CI. to run it comment the line below
-	t.Skip()
+	// t.Skip()
 	_, err := exec.LookPath("kubectl")
 	if err != nil {
 		t.Skip()
@@ -197,9 +196,16 @@ func TestGetFromSecrets(t *testing.T) {
 func TestAccessTokenRetrieval(t *testing.T) {
 	reader := setup(t)
 	cfg, _ := ReadCRSpecFromFile(reader)
-	cfg.Spec.AddToSecrets("qliksense2", "mongo", "tadadaa", "")
-	if _, err := cfg.Spec.Git.GetAccessToken(); err != nil {
-		t.Fail()
-		t.Log(err)
+	if cfg.Spec.Git.SecretName != "" {
+		// skipped because need kubectl (will not perform ci checks)
+		// if need to test, comment line bellow and add secretName to example spec
+		t.Skip()
+	} else {
+		cfg.Spec.AddToSecrets("qliksense2", "mongo", "tadadaa", "")
+		if _, err := cfg.Spec.Git.GetAccessToken(); err != nil {
+			t.Fail()
+			t.Log(err)
+		}
 	}
+
 }
