@@ -21,6 +21,7 @@ func setup(t *testing.T) io.Reader {
     manifestsRoot: "."
     git:
       accessToken: 12345
+      secretName: mongo
     configs:
       qliksense:
       - name: acceptEULA
