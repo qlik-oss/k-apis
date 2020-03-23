@@ -149,6 +149,7 @@ func (nv NameValue) GetSecretValue() string {
 }
 
 func readFromKubernetesSecret(secName, keyName string) (string, error) {
+	log.Println("hi")
 	cmd := exec.Command("kubectl", "get", "secrets", secName, "-o", "go-template", "--template={{.data."+keyName+"}}")
 	var out bytes.Buffer
 	cmd.Stdout = &out
@@ -199,21 +200,27 @@ func (cr *CRSpec) GetProfileDir() string {
 
 func (repo *Repo) GetAccessToken() (string, error) {
 	if repo.SecretName != "" {
-		accessToken := "accessToken"
-		cmd := exec.Command("kubectl", "get", "secrets", repo.SecretName, "-o", "go-template", "--template='{{index .data "+accessToken+"}}'")
+
+		cmd := exec.Command("kubectl", "get", "secrets", repo.SecretName, "-o", "go-template", "--template='{{index .data \"accessToken\"}}'")
 		var out bytes.Buffer
 		cmd.Stdout = &out
 		cmd.Stderr = os.Stderr
 		err := cmd.Run()
 		if err != nil {
+			fmt.Println("error:", err)
 			return "", err
 		}
-		data, err := base64.StdEncoding.DecodeString(out.String())
+
+		out1 := strings.Split(out.String(),`'`)
+
+		data, err := base64.StdEncoding.DecodeString(out1[1])
 		if err != nil {
 			fmt.Println("error:", err)
 			return "", err
 		}
+
 		return string(data), nil
+
 	} else if repo.AccessToken == "" {
 		return repo.AccessToken, nil
 	} else {

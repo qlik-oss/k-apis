@@ -194,18 +194,39 @@ func TestGetFromSecrets(t *testing.T) {
 }
 
 func TestAccessTokenRetrieval(t *testing.T) {
+	// skipped because need kubectl (will not perform ci checks)
+	// if need to test, comment line bellow and add secretName to example spec
+	t.Skip()
 	reader := setup(t)
 	cfg, _ := ReadCRSpecFromFile(reader)
-	if cfg.Spec.Git.SecretName != "" {
-		// skipped because need kubectl (will not perform ci checks)
-		// if need to test, comment line bellow and add secretName to example spec
+	_, err := exec.LookPath("kubectl")
+	if err != nil {
 		t.Skip()
-	} else {
-		cfg.Spec.AddToSecrets("qliksense2", "mongo", "tadadaa", "")
-		if _, err := cfg.Spec.Git.GetAccessToken(); err != nil {
-			t.Fail()
-			t.Log(err)
-		}
 	}
+	cmd := exec.Command("kubectl", "create", "secret", "generic", "test-access-token", "--from-literal=accessToken=myvalue")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	cfg.Spec.AddToSecrets("qliksense2", "mongo", "tadadaa", "test-access-token")
+	cfg.Spec.Git.SecretName = "test-access-token"
+
+
+	if token, err := cfg.Spec.Git.GetAccessToken(); err != nil {
+		t.Fail()
+		t.Log(err)
+	} else if token != "myvalue"{
+		t.Fail()
+	}
+
+	cmd = exec.Command("kubectl", "delete", "secrets", "test-access-token")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if err != nil {
+		t.Fail()
+		t.Log(err)
+	}
+
+
 
 }
