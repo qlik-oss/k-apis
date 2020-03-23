@@ -195,8 +195,9 @@ func TestGetFromSecrets(t *testing.T) {
 
 func TestAccessTokenRetrieval(t *testing.T) {
 	// skipped because need kubectl (will not perform ci checks)
-	// if need to test, comment line bellow and add secretName to example spec
+	// if need to test, comment line bellow
 	t.Skip()
+
 	reader := setup(t)
 	cfg, _ := ReadCRSpecFromFile(reader)
 	_, err := exec.LookPath("kubectl")
