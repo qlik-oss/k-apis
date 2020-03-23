@@ -149,7 +149,6 @@ func (nv NameValue) GetSecretValue() string {
 }
 
 func readFromKubernetesSecret(secName, keyName string) (string, error) {
-	log.Println("hi")
 	cmd := exec.Command("kubectl", "get", "secrets", secName, "-o", "go-template", "--template={{.data."+keyName+"}}")
 	var out bytes.Buffer
 	cmd.Stdout = &out
