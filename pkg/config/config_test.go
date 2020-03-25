@@ -19,6 +19,8 @@ func setup(t *testing.T) io.Reader {
   spec:
     profile: base
     manifestsRoot: "."
+    git:
+      accessToken: 12345
     configs:
       qliksense:
       - name: acceptEULA
@@ -135,7 +137,7 @@ func TestAddToSecrets(t *testing.T) {
 func TestReadFromKubernetesSecret(t *testing.T) {
 	// it is a special test, it requires kubectl configured.
 	// it will not run part of CI. to run it comment the line below
-	t.Skip()
+	// t.Skip()
 	_, err := exec.LookPath("kubectl")
 	if err != nil {
 		t.Skip()
@@ -189,4 +191,43 @@ func TestGetFromSecrets(t *testing.T) {
 		t.Fail()
 		t.Log(err)
 	}
+}
+
+func TestAccessTokenRetrieval(t *testing.T) {
+	// skipped because need kubectl (will not perform ci checks)
+	// if need to test, comment line bellow
+	t.Skip()
+
+	reader := setup(t)
+	cfg, _ := ReadCRSpecFromFile(reader)
+	_, err := exec.LookPath("kubectl")
+	if err != nil {
+		t.Skip()
+	}
+	cmd := exec.Command("kubectl", "create", "secret", "generic", "test-access-token", "--from-literal=accessToken=myvalue")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	cfg.Spec.AddToSecrets("qliksense2", "mongo", "tadadaa", "test-access-token")
+	cfg.Spec.Git.SecretName = "test-access-token"
+
+
+	if token, err := cfg.Spec.Git.GetAccessToken(); err != nil {
+		t.Fail()
+		t.Log(err)
+	} else if token != "myvalue"{
+		t.Fail()
+	}
+
+	cmd = exec.Command("kubectl", "delete", "secrets", "test-access-token")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if err != nil {
+		t.Fail()
+		t.Log(err)
+	}
+
+
+
 }
