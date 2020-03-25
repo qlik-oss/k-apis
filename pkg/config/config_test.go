@@ -232,25 +232,34 @@ func TestAccessTokenRetrieval(t *testing.T) {
 func TestIsNonGitOpsEqual(t *testing.T) {
 	reader := setup(t)
 	cfg, _ := ReadCRSpecFromFile(reader)
-	cfg2 := cfg
-	cfg.Spec.GitOps = &GitOps{}
-	cfg2.Spec.GitOps = &GitOps{}
+	cfg2 := cfg.Spec.DeepCopy()
 
-	if isEqual := cfg.Spec.IsNonGitOpsEqual(cfg2.Spec); isEqual != true {
+	cfg.Spec.GitOps = &GitOps{}
+	cfg2.GitOps = &GitOps{}
+
+	if isEqual := cfg.Spec.IsNonGitOpsEqual(cfg2); isEqual != true {
 		t.Fail()
 	}
 
 	// change gitops
 	cfg.Spec.GitOps.Enabled = "No"
-	cfg2.Spec.GitOps.Enabled = "Yes"
-	if isEqual := cfg.Spec.IsNonGitOpsEqual(cfg2.Spec); isEqual != true {
+	cfg2.GitOps.Enabled = "Yes"
+	if isEqual := cfg.Spec.IsNonGitOpsEqual(cfg2); isEqual != true {
 		t.Fail()
 	}
 
-	// change accesstoken
-	cfg.Spec.Git.AccessToken = "123"
-	cfg2.Spec.Git.AccessToken = "12345"
-	if isEqual := cfg.Spec.IsNonGitOpsEqual(cfg2.Spec); isEqual != true {
+	// change repo
+	cfg.Spec.Git.Repository = "master"
+	cfg2.Git.Repository = "randomBranch"
+	if isEqual := cfg.Spec.IsNonGitOpsEqual(cfg2); isEqual != false {
+		t.Fail()
+	}
+
+	// change profile
+	cfg2.Git.Repository = "master"
+	cfg.Spec.Profile = "gke"
+	cfg2.Profile = "gcp"
+	if isEqual := cfg.Spec.IsNonGitOpsEqual(cfg2); isEqual != false {
 		t.Fail()
 	}
 }
