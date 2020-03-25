@@ -211,11 +211,10 @@ func TestAccessTokenRetrieval(t *testing.T) {
 	cfg.Spec.AddToSecrets("qliksense2", "mongo", "tadadaa", "test-access-token")
 	cfg.Spec.Git.SecretName = "test-access-token"
 
-
 	if token, err := cfg.Spec.Git.GetAccessToken(); err != nil {
 		t.Fail()
 		t.Log(err)
-	} else if token != "myvalue"{
+	} else if token != "myvalue" {
 		t.Fail()
 	}
 
@@ -228,6 +227,30 @@ func TestAccessTokenRetrieval(t *testing.T) {
 		t.Log(err)
 	}
 
+}
 
+func TestIsNonGitOpsEqual(t *testing.T) {
+	reader := setup(t)
+	cfg, _ := ReadCRSpecFromFile(reader)
+	cfg2 := cfg
+	cfg.Spec.GitOps = &GitOps{}
+	cfg2.Spec.GitOps = &GitOps{}
 
+	if isEqual := cfg.Spec.IsNonGitOpsEqual(cfg2.Spec); isEqual != true {
+		t.Fail()
+	}
+
+	// change gitops
+	cfg.Spec.GitOps.Enabled = "No"
+	cfg2.Spec.GitOps.Enabled = "Yes"
+	if isEqual := cfg.Spec.IsNonGitOpsEqual(cfg2.Spec); isEqual != true {
+		t.Fail()
+	}
+
+	// change accesstoken
+	cfg.Spec.Git.AccessToken = "123"
+	cfg2.Spec.Git.AccessToken = "12345"
+	if isEqual := cfg.Spec.IsNonGitOpsEqual(cfg2.Spec); isEqual != true {
+		t.Fail()
+	}
 }
