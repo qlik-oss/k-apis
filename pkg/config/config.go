@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 
 	"os/exec"
@@ -210,7 +211,7 @@ func (repo *Repo) GetAccessToken() (string, error) {
 			return "", err
 		}
 
-		out1 := strings.Split(out.String(),`'`)
+		out1 := strings.Split(out.String(), `'`)
 
 		data, err := base64.StdEncoding.DecodeString(out1[1])
 		if err != nil {
@@ -225,4 +226,18 @@ func (repo *Repo) GetAccessToken() (string, error) {
 	} else {
 		return "", nil
 	}
+}
+
+func (crs *CRSpec) IsNonGitOpsEqual(anotherSpec *CRSpec) bool {
+	selftempGitOps := crs.GitOps
+	othertempGitOps := anotherSpec.GitOps
+
+	crs.GitOps = nil
+	anotherSpec.GitOps = nil
+	isEqual := reflect.DeepEqual(crs, anotherSpec)
+
+	//reset
+	crs.GitOps = selftempGitOps
+	anotherSpec.GitOps = othertempGitOps
+	return isEqual
 }
