@@ -43,7 +43,7 @@ func TestCreateSupperSecretSelectivePatch(t *testing.T) {
 			"name": "qliksense-secrets",
 		},
 		StringData: map[string]string{
-			"mongoDbUri": `'(( (ds "data").mongoDbUri | regexp.Replace "[\\r\\n]+" "\\\\n" | strings.Squote | strings.TrimPrefix "\'" | strings.TrimSuffix "\'" ))'`,
+			"mongoDbUri": `'(( (ds "data").mongoDbUri | regexp.Replace "[\r\n]+" "\\n" | strings.Squote | strings.TrimPrefix "'" | strings.TrimSuffix "'" ))'`,
 		},
 	}
 	ss2 := &config.SupperSecret{}
@@ -82,7 +82,7 @@ func TestProcessCrSecrets(t *testing.T) {
 	sp := getSuperSecretSPTemplate("qliksense")
 	scm := getSuperSecretTemplate("qliksense")
 	scm.StringData = map[string]string{
-		"mongoDbUri": `'(( (ds "data").mongoDbUri | regexp.Replace "[\\r\\n]+" "\\\\n" | strings.Squote | strings.TrimPrefix "\'" | strings.TrimSuffix "\'" ))'`,
+		"mongoDbUri": `'(( (ds "data").mongoDbUri | regexp.Replace "[\r\n]+" "\\n" | strings.Squote | strings.TrimPrefix "'" | strings.TrimSuffix "'" ))'`,
 	}
 	phb, _ := yaml.Marshal(scm)
 	sp.Patches = []types.Patch{
