@@ -96,7 +96,7 @@ func createSupperSecretSelectivePatch(sec map[string]config.NameValues) (map[str
 func getSecretPatchBody(svc string, nv config.NameValue) types.Patch {
 	ph := getSuperSecretTemplate(svc)
 	ph.StringData = map[string]string{
-		nv.Name: fmt.Sprintf(`(( (ds "data").%s ))`, nv.Name),
+		nv.Name: fmt.Sprintf(`'(( (ds "data").%s | regexp.Replace "[\r\n]+" "\\n" | strings.Squote | strings.TrimPrefix "'" | strings.TrimSuffix "'" ))'`, nv.Name),
 	}
 	phb, _ := yaml.Marshal(ph)
 	p1 := types.Patch{
