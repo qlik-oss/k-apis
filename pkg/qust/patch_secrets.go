@@ -1,6 +1,7 @@
 package qust
 
 import (
+	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -63,7 +64,7 @@ func writeEjsonFile(dir string, secrets config.NameValues, ejsonPublicKey string
 	ejsonDataMap := make(map[string]string)
 	ejsonDataMap["_public_key"] = ejsonPublicKey
 	for _, secret := range secrets {
-		ejsonDataMap[secret.Name] = secret.GetSecretValue()
+		ejsonDataMap[secret.Name] = base64.StdEncoding.EncodeToString([]byte(secret.GetSecretValue()))
 	}
 	return writeToEjsonFile(ejsonDataMap, filepath.Join(dir, "edata.json"))
 }
@@ -96,7 +97,7 @@ func createSupperSecretSelectivePatch(sec map[string]config.NameValues) (map[str
 func getSecretPatchBody(svc string, nv config.NameValue) types.Patch {
 	ph := getSuperSecretTemplate(svc)
 	ph.StringData = map[string]string{
-		nv.Name: fmt.Sprintf(`(( (ds "data").%s | regexp.Replace "[\r\n]+" "\\n" | strings.Squote | strings.TrimPrefix "'" | strings.TrimSuffix "'" ))`, nv.Name),
+		nv.Name: fmt.Sprintf(`((- "\n"))(( index (ds "data") "%s" | base64.Decode | indent 8 ))`, nv.Name) + "\n",
 	}
 	phb, _ := yaml.Marshal(ph)
 	p1 := types.Patch{
