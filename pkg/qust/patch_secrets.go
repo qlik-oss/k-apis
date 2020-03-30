@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/pkg/errors"
 
@@ -95,12 +96,14 @@ func createSupperSecretSelectivePatch(sec map[string]config.NameValues) (map[str
 // create a patch section to be added to the selective patch
 func getSecretPatchBody(svc string, nv config.NameValue) types.Patch {
 	ph := getSuperSecretTemplate(svc)
+	weird := "__SOMETHING_WEIRD__"
 	ph.StringData = map[string]string{
-		nv.Name: fmt.Sprintf(`(( (ds "data").%s | regexp.Replace "[\r\n]+" "\\n" | strings.Squote | strings.TrimPrefix "'" | strings.TrimSuffix "'" ))`, nv.Name),
+		nv.Name: weird,
 	}
 	phb, _ := yaml.Marshal(ph)
+	actual := fmt.Sprintf(`(( (ds "data").%s | regexp.Replace "[\r\n]+" "\\n" | strings.Squote | strings.TrimPrefix "'" | strings.TrimSuffix "'" ))`, nv.Name)
 	p1 := types.Patch{
-		Patch:  string(phb),
+		Patch:  strings.Replace(string(phb), weird, actual, -1),
 		Target: getSelector("SuperSecret", svc),
 	}
 	return p1
