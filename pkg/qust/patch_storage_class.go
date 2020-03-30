@@ -1,10 +1,11 @@
 package qust
 
 import (
+	"io/ioutil"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/qlik-oss/k-apis/pkg/config"
 )
@@ -25,12 +26,11 @@ func ProcessStorageClassName(cr *config.CRSpec) error {
 
 func enableStorageClassNameTransformer(storageClassFileName string) error {
 	//sed -i -e 's/value\: false/value\: true/g' storage-class.yaml
-	s := `s/value\: false/value\: true/g`
-	cmd := exec.Command("sed", "-i", "-e", s, storageClassFileName)
-	err := cmd.Run()
+	fileContents, err := ioutil.ReadFile(storageClassFileName)
 	if err != nil {
 		log.Fatal(err)
 		return err
 	}
-	return nil
+	replaceContents := strings.Replace(string(fileContents), "value: false", "value: true", -1)
+	return ioutil.WriteFile(storageClassFileName, []byte(replaceContents), 0644)
 }
