@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/Shopify/ejson"
@@ -81,13 +82,15 @@ func TestProcessCrSecrets(t *testing.T) {
 
 	sp := getSuperSecretSPTemplate("qliksense")
 	scm := getSuperSecretTemplate("qliksense")
+	weird := "__SOMETHING_WEIRD__"
 	scm.StringData = map[string]string{
-		"mongoDbUri": `'(( (ds "data").mongoDbUri | regexp.Replace "[\r\n]+" "\\n" | strings.Squote | strings.TrimPrefix "'" | strings.TrimSuffix "'" ))'`,
+		"mongoDbUri": weird,
 	}
+	actual := `'(( (ds "data").mongoDbUri | regexp.Replace "[\r\n]+" "\\n" | strings.Squote | strings.TrimPrefix "'" | strings.TrimSuffix "'" ))'`
 	phb, _ := yaml.Marshal(scm)
 	sp.Patches = []types.Patch{
 		{
-			Patch:  string(phb),
+			Patch:  strings.Replace(string(phb), weird, actual, -1),
 			Target: getSelector("SuperSecret", "qliksense"),
 		},
 	}
