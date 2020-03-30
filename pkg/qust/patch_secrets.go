@@ -101,7 +101,7 @@ func getSecretPatchBody(svc string, nv config.NameValue) types.Patch {
 		nv.Name: weird,
 	}
 	phb, _ := yaml.Marshal(ph)
-	actual := fmt.Sprintf(`"(( (ds "data").idpConfigs | strings.Quote | regexp.Replace "[\r\n]+" "\\n" | strings.TrimPrefix "\"" | strings.TrimSuffix "\"" ))"`, nv.Name)
+	actual := fmt.Sprintf(`"(( (ds "data").%s | strings.Quote | regexp.Replace "[\r\n]+" "\\n" | strings.TrimPrefix "\"" | strings.TrimSuffix "\"" ))"`, nv.Name)
 	p1 := types.Patch{
 		Patch:  strings.Replace(string(phb), weird, actual, -1),
 		Target: getSelector("SuperSecret", svc),
