@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/Shopify/ejson"
@@ -43,12 +44,14 @@ func TestCreateSupperSecretSelectivePatch(t *testing.T) {
 			"name": "qliksense-secrets",
 		},
 		StringData: map[string]string{
-			"mongoDbUri": `((- "\n"))(( index (ds "data") "mongoDbUri" | base64.Decode | indent 8 ))` + "\n",
+			"mongoDbUri": `((- "\n"))(( index (ds "data") "mongoDbUri" | base64.Decode | indent 8 ))`,
 		},
 	}
 	ss2 := &config.SupperSecret{}
-	yaml.Unmarshal([]byte(sp.Patches[0].Patch), ss2)
-
+	if err := yaml.Unmarshal([]byte(sp.Patches[0].Patch), ss2); err != nil {
+		t.Fail()
+		t.Log(err)
+	}
 	if !reflect.DeepEqual(ss, ss2) {
 		t.Fail()
 		t.Log("expected selectivePatch: ", ss)
@@ -87,7 +90,7 @@ func TestProcessCrSecrets(t *testing.T) {
 	phb, _ := yaml.Marshal(scm)
 	sp.Patches = []types.Patch{
 		{
-			Patch:  string(phb),
+			Patch:  strings.Replace(string(phb), ": |", ": |-", -1),
 			Target: getSelector("SuperSecret", "qliksense"),
 		},
 	}

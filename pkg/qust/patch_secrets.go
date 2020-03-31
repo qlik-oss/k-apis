@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/pkg/errors"
 
@@ -101,7 +102,7 @@ func getSecretPatchBody(svc string, nv config.NameValue) types.Patch {
 	}
 	phb, _ := yaml.Marshal(ph)
 	p1 := types.Patch{
-		Patch:  string(phb),
+		Patch:  strings.Replace(string(phb), ": |", ": |-", -1), // when load again the |- will disappaer and the value will be on one line
 		Target: getSelector("SuperSecret", svc),
 	}
 	return p1
