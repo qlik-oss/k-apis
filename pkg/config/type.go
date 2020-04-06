@@ -19,6 +19,7 @@ type CRSpec struct {
 	StorageClassName string                `json:"storageClassName,omitempty" yaml:"storageClassName,omitempty"`
 	Git              *Repo                 `json:"git,omitempty" yaml:"git,omitempty"`
 	GitOps           *GitOps               `json:"gitOps,omitempty" yaml:"gitOps,omitempty"`
+	FetchSource      *Repo                 `json:"fetchSource,omitempty" yaml:"fetchSource,omitempty"`
 }
 
 type KApiCr struct {
