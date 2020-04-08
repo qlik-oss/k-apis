@@ -104,3 +104,17 @@ func TestLoadExistingOrCreateEmptySelectivePatch(t *testing.T) {
 	}
 
 }
+
+func TestDisabledTansformersList(t *testing.T) {
+	tempDir, _ := downloadQliksenseK8sForTest()
+	list, err := disabledTansformersList(filepath.Join(tempDir, "manifests", "base", "transformers"))
+	if err != nil {
+		t.Log(err)
+		t.Fail()
+	}
+	if len(list) == 0 {
+		t.Log("there should be few disabled transformers")
+		t.Fail()
+	}
+
+}

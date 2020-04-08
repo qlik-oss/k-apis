@@ -1,8 +1,11 @@
 package qust
 
 import (
+	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/qlik-oss/k-apis/pkg/config"
 	"gopkg.in/yaml.v2"
@@ -139,16 +142,49 @@ func disabledTansformersList(baseTransDir string) ([]string, error) {
 	result := make([]string, len(list))
 
 	for _, l := range list {
-		sp := &config.SelectivePatch{}
-		tKFile := filepath.Join(baseTransDir, l, "selectivepatch.yaml")
-		if b, e := ioutil.ReadFile(tKFile); e != nil {
-			// file not found
-			continue
-		} else if e := yaml.Unmarshal(b, sp); e != nil {
-			return nil, e
-		} else if !sp.Enabled {
+		if !isTransformerEnabled(filepath.Join(baseTransDir, l)) {
 			result = append(result, l)
 		}
 	}
 	return result, nil
+}
+
+func isTransformerEnabled(transDir string) bool {
+	tfName := filepath.Base(transDir)
+	kustFile := filepath.Join(transDir, "kustomization.yaml")
+	list, err := getResourcesList(kustFile)
+	if err != nil {
+		fmt.Println("Problem getting list of resoruces from kust file" + err.Error())
+		return false
+	}
+	for _, f := range list {
+		finfo, err := os.Lstat(filepath.Join(transDir, f))
+		if err != nil {
+			return false
+		}
+		if finfo.IsDir() {
+			// not expecting a director
+			continue
+		}
+		by, err := ioutil.ReadFile(filepath.Join(transDir, f))
+		if err != nil {
+			fmt.Println("Cannot not read file " + err.Error())
+			return false
+		}
+
+		if !strings.Contains(string(by), "kind: SelectivePatch") {
+			continue
+		}
+
+		sp := &config.SelectivePatch{}
+		if err := yaml.Unmarshal(by, sp); err != nil {
+			fmt.Println("cannot process yaml " + err.Error())
+			return false
+		}
+		if sp.Metadata == nil || sp.Metadata.Labels == nil {
+			return false
+		}
+		return sp.Enabled && sp.Metadata.Labels["key"] == tfName
+	}
+	return false
 }
