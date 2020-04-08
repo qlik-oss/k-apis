@@ -30,8 +30,8 @@ func mergeSelectivePatches(sp1, sp2 *config.SelectivePatch) (*config.SelectivePa
 	if sp2 == nil {
 		return sp1, nil
 	}
-	if sp1.ApiVersion != sp2.ApiVersion || sp1.Kind != sp2.Kind || sp1.Metadata["name"] != sp2.Metadata["name"] {
-		err := errors.New("Cannot merge selective patches [ " + sp1.Metadata["name"] + " != " + sp2.Metadata["name"])
+	if sp1.Kind != sp2.Kind || sp1.Metadata.Name != sp2.Metadata.Name {
+		err := errors.New("Cannot merge selective patches [ " + sp1.Metadata.Name + " != " + sp2.Metadata.Name)
 		return nil, err
 	}
 	sp1.Patches = append(sp1.Patches, sp2.Patches...)
@@ -88,6 +88,12 @@ func isResourcesInKust(rsFileName string, kust *types.Kustomization) bool {
 }
 
 func getSelector(kind, svc string) *types.Selector {
+	if svc == "" {
+		return &types.Selector{
+			Gvk: resid.Gvk{
+				Kind: kind,
+			}}
+	}
 	return &types.Selector{
 		Gvk: resid.Gvk{
 			Kind: kind,
@@ -101,10 +107,31 @@ func getSelectivePatchTemplate(name string) *config.SelectivePatch {
 	su := &config.SelectivePatch{
 		ApiVersion: "qlik.com/v1",
 		Kind:       "SelectivePatch",
-		Metadata: map[string]string{
-			"name": name,
+		Metadata: &config.CustomMetadata{
+			Name: name,
 		},
 		Enabled: true,
 	}
 	return su
+}
+
+func getResourcesList(kustFile string) ([]string, error) {
+	kust := &types.Kustomization{}
+	by, err := ioutil.ReadFile(kustFile)
+	if err != nil {
+		return nil, err
+	}
+	if err := yaml.Unmarshal(by, kust); err != nil {
+		return nil, err
+	}
+	return kust.Resources, nil
+}
+
+func contains(arr []string, str string) bool {
+	for _, a := range arr {
+		if a == str {
+			return true
+		}
+	}
+	return false
 }

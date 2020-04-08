@@ -31,7 +31,7 @@ func TestCreateSupperSecretSelectivePatch(t *testing.T) {
 	if sp.Kind != "SelectivePatch" {
 		t.Fatal("Kind wasn't what we expected")
 	}
-	if sp.Metadata["name"] != "qliksense-generated-operator-secrets" {
+	if sp.Metadata.Name != "qliksense-generated-operator-secrets" {
 		t.Fatal(`Metadata["name"] wasn't what we expected`)
 	}
 	if sp.Patches[0].Target.LabelSelector != "app=qliksense" || sp.Patches[0].Target.Kind != "SuperSecret" {

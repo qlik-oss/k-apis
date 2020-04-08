@@ -29,11 +29,11 @@ type KApiCr struct {
 }
 
 type SelectivePatch struct {
-	ApiVersion string            `yaml:"apiVersion"`
-	Kind       string            `yaml:"kind"`
-	Metadata   map[string]string `yaml:"metadata"`
-	Enabled    bool              `yaml:"enabled,omitempty"`
-	Patches    []types.Patch     `yaml:"patches,omitempty"`
+	ApiVersion string          `yaml:"apiVersion"`
+	Kind       string          `yaml:"kind"`
+	Metadata   *CustomMetadata `yaml:"metadata"`
+	Enabled    bool            `yaml:"enabled,omitempty"`
+	Patches    []types.Patch   `yaml:"patches,omitempty"`
 }
 
 type SupperConfigMap struct {
@@ -81,4 +81,10 @@ type GitOps struct {
 	Schedule    string `json:"schedule,omitempty" yaml:"schedule,omitempty"`
 	WatchBranch string `json:"watchBranch,omitempty" yaml:"watchBranch,omitempty"`
 	Image       string `json:"image,omitempty" yaml:"image,omitempty"`
+}
+
+type CustomMetadata struct {
+	Name        string            `json:"name,omitempty" yaml:"name,omitempty"`
+	Labels      map[string]string `json:"labels,omitempty" yaml:"labels,omitempty"`
+	Annotations map[string]string `json:"annotations,omitempty" yaml:"annotations,omitempty"`
 }
