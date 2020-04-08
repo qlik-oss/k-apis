@@ -29,11 +29,10 @@ type KApiCr struct {
 }
 
 type SelectivePatch struct {
-	ApiVersion string            `yaml:"apiVersion"`
-	Kind       string            `yaml:"kind"`
-	Metadata   map[string]string `yaml:"metadata"`
-	Enabled    bool              `yaml:"enabled,omitempty"`
-	Patches    []types.Patch     `yaml:"patches,omitempty"`
+	metav1.TypeMeta   `json:",inline" yaml:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty" yaml:"metadata,omitempty"`
+	Enabled           bool          `yaml:"enabled,omitempty"`
+	Patches           []types.Patch `yaml:"patches,omitempty"`
 }
 
 type SupperConfigMap struct {

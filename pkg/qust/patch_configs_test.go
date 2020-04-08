@@ -22,13 +22,13 @@ func TestCreateSupperConfigSelectivePatch(t *testing.T) {
 		t.Fatalf("error creating map of service selective patches")
 	}
 	sp := spMap["qliksense"]
-	if sp.ApiVersion != "qlik.com/v1" {
+	if sp.APIVersion != "qlik.com/v1" {
 		t.Fatal("ApiVersion wasn't what we expected")
 	}
 	if sp.Kind != "SelectivePatch" {
 		t.Fatal("Kind wasn't what we expected")
 	}
-	if sp.Metadata["name"] != "qliksense-generated-operator-configs" {
+	if sp.GetName() != "qliksense-generated-operator-configs" {
 		t.Fatal(`Metadata["name"] wasn't what we expected`)
 	}
 	if sp.Patches[0].Target.LabelSelector != "app=qliksense" || sp.Patches[0].Target.Kind != "SuperConfigMap" {
