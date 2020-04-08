@@ -67,7 +67,7 @@ func kustFileHelper(kustFile string, fn func(*types.Kustomization)) error {
 
 	fn(kust)
 
-	// kust.FixKustomizationPostUnmarshalling()
+	kust.FixKustomizationPostUnmarshalling()
 	// there is a bug if not put nil https://github.com/kubernetes-sigs/kustomize/pull/1004/files
 
 	d, err := yaml.Marshal(kust)
