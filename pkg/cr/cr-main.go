@@ -136,6 +136,10 @@ func createPatches(cr *config.KApiCr, kubeConfigPath string) error {
 	if err := qust.ProcessSecrets(cr.Spec, ejsonPublicKey); err != nil {
 		return err
 	}
+	// patch transformers based on configs and secrets
+	if err := qust.ProcessTransfomer(cr.Spec); err != nil {
+		return err
+	}
 
 	switch cr.Spec.RotateKeys {
 	case "yes":

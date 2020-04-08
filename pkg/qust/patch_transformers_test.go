@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/google/uuid"
@@ -24,11 +25,55 @@ func TestProcessTransfomer(t *testing.T) {
 	}
 	cfg.Spec.ManifestsRoot = tempDir
 	cfg.Spec.AddToSecrets("qliksense", "caCertificates", "somethign", "")
+	cfg.Spec.AddToSecrets("audit", "caCertificates", "somethign", "")
 	if err := ProcessTransfomer(cfg.Spec); err != nil {
 		t.Log(err)
 		t.FailNow()
 	}
-	t.Log(tempDir)
+	genTranPath := filepath.Join(tempDir, ".operator", "transformers")
+	kFile := filepath.Join(genTranPath, "kustomization.yaml")
+	list, err := getResourcesList(kFile)
+	if err != nil {
+		t.Log(err)
+		t.Fail()
+	}
+	if !contains(list, "qliksense.yaml") {
+		t.Log("expected resources is not created")
+		t.Logf("%v", list)
+		t.Fail()
+	}
+	if !contains(list, "audit.yaml") {
+		t.Log("expected resources is not created")
+		t.Logf("%v", list)
+		t.Fail()
+	}
+	bt, err := ioutil.ReadFile(filepath.Join(genTranPath, "qliksense.yaml"))
+	if err != nil {
+		t.Log(err)
+		t.Fail()
+	}
+	if !strings.Contains(string(bt), "caCertificates") {
+		t.Log(string(bt))
+		t.Fail()
+	}
+	if strings.Contains(string(bt), "labelSelector") {
+		t.Log(string(bt))
+		t.Fail()
+	}
+
+	bt, err = ioutil.ReadFile(filepath.Join(genTranPath, "audit.yaml"))
+	if err != nil {
+		t.Log(err)
+		t.Fail()
+	}
+	if !strings.Contains(string(bt), "caCertificates") {
+		t.Log(string(bt))
+		t.Fail()
+	}
+	if !strings.Contains(string(bt), "labelSelector: app=audit") {
+		t.Log(string(bt))
+		t.Fail()
+	}
 }
 
 func downloadQliksenseK8sForTest() (string, error) {

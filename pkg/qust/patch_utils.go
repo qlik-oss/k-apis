@@ -3,11 +3,11 @@ package qust
 import (
 	"errors"
 	"io"
+	"io/ioutil"
 
 	"github.com/qlik-oss/k-apis/pkg/config"
 	"gopkg.in/yaml.v2"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/kustomize/api/resid"
 	"sigs.k8s.io/kustomize/api/types"
 )
@@ -30,8 +30,8 @@ func mergeSelectivePatches(sp1, sp2 *config.SelectivePatch) (*config.SelectivePa
 	if sp2 == nil {
 		return sp1, nil
 	}
-	if sp1.Kind != sp2.Kind || sp1.GetName() != sp2.GetName() {
-		err := errors.New("Cannot merge selective patches [ " + sp1.GetName() + " != " + sp2.GetName())
+	if sp1.Kind != sp2.Kind || sp1.Metadata.Name != sp2.Metadata.Name {
+		err := errors.New("Cannot merge selective patches [ " + sp1.Metadata.Name + " != " + sp2.Metadata.Name)
 		return nil, err
 	}
 	sp1.Patches = append(sp1.Patches, sp2.Patches...)
@@ -59,16 +59,23 @@ func addResourceToKustomization(rsFileName string, kustFile string) error {
 // fn will define what type of file it would be
 func kustFileHelper(kustFile string, fn func(*types.Kustomization)) error {
 	kust := &types.Kustomization{}
-	if err := ReadFromFile(kust, kustFile); err != nil {
+	content, err := ioutil.ReadFile(kustFile)
+	if err != nil {
 		return err
 	}
+	yaml.Unmarshal(content, kust)
 
 	fn(kust)
 
-	kust.FixKustomizationPostUnmarshalling()
+	// kust.FixKustomizationPostUnmarshalling()
 	// there is a bug if not put nil https://github.com/kubernetes-sigs/kustomize/pull/1004/files
 
-	return WriteToFile(kust, kustFile)
+	d, err := yaml.Marshal(kust)
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(kustFile, d, FILE_PERMISION)
+	return err
 }
 
 func isResourcesInKust(rsFileName string, kust *types.Kustomization) bool {
@@ -98,11 +105,9 @@ func getSelector(kind, svc string) *types.Selector {
 // a SelectivePatch object with service name in it
 func getSelectivePatchTemplate(name string) *config.SelectivePatch {
 	su := &config.SelectivePatch{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "qlik.com/v1",
-			Kind:       "SelectivePatch",
-		},
-		ObjectMeta: metav1.ObjectMeta{
+		ApiVersion: "qlik.com/v1",
+		Kind:       "SelectivePatch",
+		Metadata: &config.CustomMetadata{
 			Name: name,
 		},
 		Enabled: true,
@@ -112,7 +117,11 @@ func getSelectivePatchTemplate(name string) *config.SelectivePatch {
 
 func getResourcesList(kustFile string) ([]string, error) {
 	kust := &types.Kustomization{}
-	if err := ReadFromFile(kust, kustFile); err != nil {
+	by, err := ioutil.ReadFile(kustFile)
+	if err != nil {
+		return nil, err
+	}
+	if err := yaml.Unmarshal(by, kust); err != nil {
 		return nil, err
 	}
 	return kust.Resources, nil
