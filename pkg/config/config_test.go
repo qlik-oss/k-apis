@@ -263,3 +263,71 @@ func TestIsNonGitOpsEqual(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func Test_GetImageRegistry(t *testing.T) {
+	var testCases = []struct {
+		name                  string
+		crString              string
+		expectedImageRegistry string
+	}{
+		{
+			name: "image registry is set",
+			crString: `
+  apiVersion: qlik.com/v1
+  kind: Qliksense
+  metadata:
+    name: test-cr
+  spec:
+    configs:
+      qliksense:
+      - name: acceptEULA
+        value: "yes"
+      - name: imageRegistry
+        value: fooRegistry
+`,
+			expectedImageRegistry: "fooRegistry",
+		},
+		{
+			name: "image registry is NOT set",
+			crString: `
+  apiVersion: qlik.com/v1
+  kind: Qliksense
+  metadata:
+    name: test-cr
+  spec:
+    configs:
+      qliksense:
+      - name: acceptEULA
+        value: "yes"
+`,
+			expectedImageRegistry: "",
+		},
+		{
+			name: "no configs are set at all",
+			crString: `
+  apiVersion: qlik.com/v1
+  kind: Qliksense
+  metadata:
+    name: test-cr
+  spec:
+    secrets:
+      qliksense:
+      - name: something
+        value: other
+`,
+			expectedImageRegistry: "",
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			cr, err := ReadCRSpecFromFile(strings.NewReader(testCase.crString))
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if actualImageRegistry := cr.Spec.GetImageRegistry(); actualImageRegistry != testCase.expectedImageRegistry {
+				t.Fatalf("expected image registry to be: %v, but it was %v", testCase.expectedImageRegistry, actualImageRegistry)
+			}
+		})
+	}
+}
