@@ -239,3 +239,14 @@ func (crs *CRSpec) IsNonGitOpsEqual(anotherSpec *CRSpec) bool {
 	anotherSpec.GitOps = othertempGitOps
 	return isEqual
 }
+
+func (crs *CRSpec) GetImageRegistry() string {
+	for _, nameValues := range crs.Configs {
+		for _, nameValue := range nameValues {
+			if nameValue.Name == "imageRegistry" {
+				return nameValue.Value
+			}
+		}
+	}
+	return ""
+}
