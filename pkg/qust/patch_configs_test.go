@@ -72,7 +72,7 @@ func TestProcessConfigs(t *testing.T) {
 	}
 	phb, _ := yaml.Marshal(scm)
 	sp.Patches = []types.Patch{
-		types.Patch{
+		{
 			Patch:  string(phb),
 			Target: getSelector("SuperConfigMap", "qliksense"),
 		},

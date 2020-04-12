@@ -221,10 +221,8 @@ func (repo *Repo) GetAccessToken() (string, error) {
 
 		return string(data), nil
 
-	} else if repo.AccessToken == "" {
-		return repo.AccessToken, nil
 	} else {
-		return "", nil
+		return repo.AccessToken, nil
 	}
 }
 
