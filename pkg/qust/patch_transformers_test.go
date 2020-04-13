@@ -26,6 +26,7 @@ func TestProcessTransfomer(t *testing.T) {
 	cfg.Spec.ManifestsRoot = tempDir
 	cfg.Spec.AddToSecrets("qliksense", "caCertificates", "somethign", "")
 	cfg.Spec.AddToSecrets("audit", "caCertificates", "somethign", "")
+	cfg.Spec.AddToConfigs("qliksense", "storageClassName", "efs")
 	if err := ProcessTransfomer(cfg.Spec); err != nil {
 		t.Log(err)
 		t.FailNow()
@@ -52,11 +53,16 @@ func TestProcessTransfomer(t *testing.T) {
 		t.Log(err)
 		t.Fail()
 	}
-	if !strings.Contains(string(bt), "caCertificates") {
+	if !strings.Contains(string(bt), "name: caCertificates") {
 		t.Log(string(bt))
 		t.Fail()
 	}
 	if strings.Contains(string(bt), "labelSelector") {
+		t.Log(string(bt))
+		t.Fail()
+	}
+	if strings.Contains(string(bt), "storageClassName") {
+		t.Log("strageClassName transfomer is has another way to patch")
 		t.Log(string(bt))
 		t.Fail()
 	}
