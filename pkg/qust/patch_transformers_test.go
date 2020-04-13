@@ -26,6 +26,7 @@ func TestProcessTransfomer(t *testing.T) {
 	cfg.Spec.ManifestsRoot = tempDir
 	cfg.Spec.AddToSecrets("qliksense", "caCertificates", "somethign", "")
 	cfg.Spec.AddToSecrets("audit", "caCertificates", "somethign", "")
+	cfg.Spec.AddToConfigs("qliksense", "storageClassName", "efs")
 	if err := ProcessTransfomer(cfg.Spec); err != nil {
 		t.Log(err)
 		t.FailNow()
@@ -60,6 +61,11 @@ func TestProcessTransfomer(t *testing.T) {
 		t.Log(string(bt))
 		t.Fail()
 	}
+	if strings.Contains(string(bt), "storageClassName") {
+		t.Log("strageClassName transfomer is has another way to patch")
+		t.Log(string(bt))
+		t.Fail()
+	}
 
 	bt, err = ioutil.ReadFile(filepath.Join(genTranPath, "audit.yaml"))
 	if err != nil {
@@ -74,6 +80,7 @@ func TestProcessTransfomer(t *testing.T) {
 		t.Log(string(bt))
 		t.Fail()
 	}
+
 }
 
 func downloadQliksenseK8sForTest() (string, error) {

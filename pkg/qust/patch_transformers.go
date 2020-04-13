@@ -15,7 +15,6 @@ import (
 func ProcessTransfomer(cr *config.CRSpec) error {
 	transformersDir := filepath.Join(cr.GetManifestsRoot(), "manifests", "base", "transformers")
 	destTransDir := filepath.Join(cr.GetManifestsRoot(), ".operator", "transformers")
-
 	list, err := disabledTansformersList(transformersDir)
 	if err != nil {
 		return err
@@ -136,12 +135,24 @@ func disabledTansformersList(baseTransDir string) ([]string, error) {
 	kustFile := filepath.Join(baseTransDir, "kustomization.yaml")
 	list, err := getResourcesList(kustFile)
 
+	excludeList := []string{"storageClassName"}
+	newList := make([]string, len(list))
+
+	for _, e := range excludeList {
+		for _, j := range list {
+			if j != e {
+				newList = append(newList, j)
+			}
+		}
+	}
+
 	if err != nil {
 		return nil, err
 	}
-	result := make([]string, len(list))
+	result := make([]string, len(newList))
 
-	for _, l := range list {
+	for _, l := range newList {
+
 		if !isTransformerEnabled(filepath.Join(baseTransDir, l)) {
 			result = append(result, l)
 		}
