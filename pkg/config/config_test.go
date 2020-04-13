@@ -137,7 +137,7 @@ func TestAddToSecrets(t *testing.T) {
 func TestReadFromKubernetesSecret(t *testing.T) {
 	// it is a special test, it requires kubectl configured.
 	// it will not run part of CI. to run it comment the line below
-	// t.Skip()
+	t.Skip()
 	_, err := exec.LookPath("kubectl")
 	if err != nil {
 		t.Skip()
