@@ -9,6 +9,7 @@ import (
 
 	"github.com/qlik-oss/k-apis/pkg/config"
 	"gopkg.in/yaml.v2"
+	"sigs.k8s.io/kustomize/api/resid"
 	"sigs.k8s.io/kustomize/api/types"
 )
 
@@ -89,9 +90,15 @@ func createSelectivePatchObjectForTransformer(transformerName, appName string) (
 		Patch: string(phb),
 	}
 	if appName == "qliksense" {
-		p1.Target = getSelector("SelectivePatch", "")
+		p1.Target = &types.Selector{
+			Gvk: resid.Gvk{
+				Kind: "SelectivePatch",
+			},
+			Name: transformerName,
+		}
 	} else {
 		p1.Target = getSelector("SelectivePatch", appName)
+		p1.Target.Name = transformerName
 	}
 	//sp.Patches = []types.Patch{p1}
 	return p1, nil

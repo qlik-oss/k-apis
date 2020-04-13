@@ -53,7 +53,7 @@ func TestProcessTransfomer(t *testing.T) {
 		t.Log(err)
 		t.Fail()
 	}
-	if !strings.Contains(string(bt), "caCertificates") {
+	if !strings.Contains(string(bt), "name: caCertificates") {
 		t.Log(string(bt))
 		t.Fail()
 	}
@@ -80,7 +80,6 @@ func TestProcessTransfomer(t *testing.T) {
 		t.Log(string(bt))
 		t.Fail()
 	}
-
 }
 
 func downloadQliksenseK8sForTest() (string, error) {
