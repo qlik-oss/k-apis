@@ -57,12 +57,11 @@ func TestProcessTransfomer(t *testing.T) {
 		t.Log(string(bt))
 		t.Fail()
 	}
-	if strings.Contains(string(bt), "labelSelector") {
+	if !strings.Contains(string(bt), "name: storageClassName") {
 		t.Log(string(bt))
 		t.Fail()
 	}
-	if strings.Contains(string(bt), "storageClassName") {
-		t.Log("strageClassName transfomer is has another way to patch")
+	if strings.Contains(string(bt), "labelSelector") {
 		t.Log(string(bt))
 		t.Fail()
 	}

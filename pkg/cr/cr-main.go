@@ -111,9 +111,6 @@ func createPatches(cr *config.KApiCr, kubeConfigPath string) error {
 	}
 	// process cr.storageClassName
 	if cr.Spec.StorageClassName != "" {
-		if err := qust.ProcessStorageClassName(cr.Spec); err != nil {
-			return err
-		}
 		// added to the configs so that down the road it is being processed
 		cr.Spec.AddToConfigs("qliksense", "storageClassName", cr.Spec.StorageClassName)
 	}

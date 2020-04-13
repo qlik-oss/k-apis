@@ -135,3 +135,17 @@ func contains(arr []string, str string) bool {
 	}
 	return false
 }
+
+func removeResourceFromKust(rsName, kustFile string) error {
+	fn := func(kust *types.Kustomization) {
+		newRes := make([]string, 0)
+		// if the resource exist remove it
+		for _, r := range kust.Resources {
+			if r != rsName && r != "" && rsName != "" {
+				newRes = append(newRes, r)
+			}
+		}
+		kust.Resources = newRes
+	}
+	return kustFileHelper(kustFile, fn)
+}
