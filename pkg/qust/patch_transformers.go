@@ -39,7 +39,8 @@ func ProcessTransfomer(cr *config.CRSpec) error {
 
 		}
 	}
-	return nil
+	// for backward qliksense-k8s compatilibity.
+	return removeResourceFromKust("storage-class.yaml", filepath.Join(destTransDir, "kustomization.yaml"))
 }
 
 func writeTranasformer(transDir, appName, transformerName string) error {
@@ -141,24 +142,24 @@ func loadExistingOrCreateEmptySelectivePatch(appName, spName, kustDirectory stri
 func disabledTansformersList(baseTransDir string) ([]string, error) {
 	kustFile := filepath.Join(baseTransDir, "kustomization.yaml")
 	list, err := getResourcesList(kustFile)
+	/*
+		excludeList := []string{"storageClassName"}
+		newList := make([]string, len(list))
 
-	excludeList := []string{"storageClassName"}
-	newList := make([]string, len(list))
-
-	for _, e := range excludeList {
-		for _, j := range list {
-			if j != e {
-				newList = append(newList, j)
+		for _, e := range excludeList {
+			for _, j := range list {
+				if j != e {
+					newList = append(newList, j)
+				}
 			}
 		}
-	}
-
+	*/
 	if err != nil {
 		return nil, err
 	}
-	result := make([]string, len(newList))
+	result := make([]string, len(list))
 
-	for _, l := range newList {
+	for _, l := range list {
 
 		if !isTransformerEnabled(filepath.Join(baseTransDir, l)) {
 			result = append(result, l)
