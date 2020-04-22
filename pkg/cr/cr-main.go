@@ -11,13 +11,13 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Shopify/ejson"
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing/transport"
+	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/qlik-oss/k-apis/pkg/config"
 	crGit "github.com/qlik-oss/k-apis/pkg/git"
 	"github.com/qlik-oss/k-apis/pkg/qust"
 	"github.com/qlik-oss/k-apis/pkg/state"
-	"gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing/transport"
-	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
 )
 
 const (
