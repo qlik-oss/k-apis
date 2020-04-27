@@ -18,7 +18,7 @@ type CRSpec struct {
 	RotateKeys       string                `json:"rotateKeys,omitempty" yaml:"rotateKeys,omitempty"`
 	StorageClassName string                `json:"storageClassName,omitempty" yaml:"storageClassName,omitempty"`
 	Git              *Repo                 `json:"git,omitempty" yaml:"git,omitempty"`
-	GitOps           *GitOps               `json:"gitOps,omitempty" yaml:"gitOps,omitempty"`
+	OpsRunner        *OpsRunner            `json:"opsRunner,omitempty" yaml:"opsRunner,omitempty"`
 	FetchSource      *Repo                 `json:"fetchSource,omitempty" yaml:"fetchSource,omitempty"`
 }
 
@@ -76,11 +76,12 @@ type Repo struct {
 	SecretName  string `json:"secretName,omitempty" yaml:"secretName,omitempty"`
 }
 
-type GitOps struct {
+type OpsRunner struct {
 	Enabled     string `json:"enabled,omitempty" yaml:"enabled,omitempty"`
 	Schedule    string `json:"schedule,omitempty" yaml:"schedule,omitempty"`
 	WatchBranch string `json:"watchBranch,omitempty" yaml:"watchBranch,omitempty"`
 	Image       string `json:"image,omitempty" yaml:"image,omitempty"`
+	CrPvc       string `json:"crPvc,omitempty" yaml:"crPvc,omitempty"`
 }
 
 type CustomMetadata struct {

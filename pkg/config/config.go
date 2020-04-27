@@ -226,17 +226,17 @@ func (repo *Repo) GetAccessToken() (string, error) {
 	}
 }
 
-func (crs *CRSpec) IsNonGitOpsEqual(anotherSpec *CRSpec) bool {
-	selftempGitOps := crs.GitOps
-	othertempGitOps := anotherSpec.GitOps
+func (crs *CRSpec) IsEqualExceptOpsRunner(anotherSpec *CRSpec) bool {
+	selftempGitOps := crs.OpsRunner
+	othertempGitOps := anotherSpec.OpsRunner
 
-	crs.GitOps = nil
-	anotherSpec.GitOps = nil
+	crs.OpsRunner = nil
+	anotherSpec.OpsRunner = nil
 	isEqual := reflect.DeepEqual(crs, anotherSpec)
 
 	//reset
-	crs.GitOps = selftempGitOps
-	anotherSpec.GitOps = othertempGitOps
+	crs.OpsRunner = selftempGitOps
+	anotherSpec.OpsRunner = othertempGitOps
 	return isEqual
 }
 
