@@ -127,17 +127,14 @@ func getBinaryData(backupDirs []BackupDir) (map[string][]byte, error) {
 	for _, backupDir := range backupDirs {
 		archiveFilePath := path.Join(tmpDir, fmt.Sprintf("%v.tar.gz", backupDir.Key))
 		var archiveSources []string
-		if err := filepath.Walk(backupDir.Directory, func(fpath string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-			if fpath != backupDir.Directory {
-				archiveSources = append(archiveSources, fpath)
-			}
-			return nil
-		}); err != nil {
+		if fileInfos, err := ioutil.ReadDir(backupDir.Directory); err != nil {
 			return nil, err
-		} else if err := archiver.NewTarGz().Archive(archiveSources, archiveFilePath); err != nil {
+		} else {
+			for _, fileInfo := range fileInfos {
+				archiveSources = append(archiveSources, filepath.Join(backupDir.Directory, fileInfo.Name()))
+			}
+		}
+		if err := archiver.NewTarGz().Archive(archiveSources, archiveFilePath); err != nil {
 			return nil, err
 		} else if data, err := ioutil.ReadFile(archiveFilePath); err != nil {
 			return nil, err
