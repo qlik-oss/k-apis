@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -28,4 +29,16 @@ func TestGenerate(t *testing.T) {
 	assert.Equal(t, keyId, jwksKeyMap["kid"])
 	assert.Contains(t, jwksKeyMap["pem"], "-----BEGIN PUBLIC KEY-----")
 	assert.Contains(t, jwksKeyMap["pem"], "-----END PUBLIC KEY-----")
+}
+
+func Test_getSelfSignedCertAndKey(t *testing.T) {
+	host := "elastic.example"
+	org := "elastic-local-cert"
+	validity := time.Hour * 24 * 365 * 10
+	selfSignedCert, key, err := GetSelfSignedCertAndKey(host, org, validity)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	fmt.Print(string(selfSignedCert))
+	fmt.Print(string(key))
 }
