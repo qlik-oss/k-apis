@@ -238,29 +238,29 @@ func TestAccessTokenRetrieval(t *testing.T) {
 
 }
 
-func TestIsNonGitOpsEqual(t *testing.T) {
+func TestIsEqualExceptOpsRunner(t *testing.T) {
 	reader := setup(t)
 	cfg, _ := ReadCRSpecFromFile(reader)
 	cfg2 := cfg.Spec.DeepCopy()
 
-	cfg.Spec.GitOps = &GitOps{}
-	cfg2.GitOps = &GitOps{}
+	cfg.Spec.OpsRunner = &OpsRunner{}
+	cfg2.OpsRunner = &OpsRunner{}
 
-	if isEqual := cfg.Spec.IsNonGitOpsEqual(cfg2); isEqual != true {
+	if isEqual := cfg.Spec.IsEqualExceptOpsRunner(cfg2); isEqual != true {
 		t.Fail()
 	}
 
 	// change gitops
-	cfg.Spec.GitOps.Enabled = "No"
-	cfg2.GitOps.Enabled = "Yes"
-	if isEqual := cfg.Spec.IsNonGitOpsEqual(cfg2); isEqual != true {
+	cfg.Spec.OpsRunner.Enabled = "No"
+	cfg2.OpsRunner.Enabled = "Yes"
+	if isEqual := cfg.Spec.IsEqualExceptOpsRunner(cfg2); isEqual != true {
 		t.Fail()
 	}
 
 	// change repo
 	cfg.Spec.Git.Repository = "master"
 	cfg2.Git.Repository = "randomBranch"
-	if isEqual := cfg.Spec.IsNonGitOpsEqual(cfg2); isEqual != false {
+	if isEqual := cfg.Spec.IsEqualExceptOpsRunner(cfg2); isEqual != false {
 		t.Fail()
 	}
 
@@ -268,7 +268,7 @@ func TestIsNonGitOpsEqual(t *testing.T) {
 	cfg2.Git.Repository = "master"
 	cfg.Spec.Profile = "gke"
 	cfg2.Profile = "gcp"
-	if isEqual := cfg.Spec.IsNonGitOpsEqual(cfg2); isEqual != false {
+	if isEqual := cfg.Spec.IsEqualExceptOpsRunner(cfg2); isEqual != false {
 		t.Fail()
 	}
 }
