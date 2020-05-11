@@ -109,7 +109,7 @@ func Generate() (privateKeyPem string, keyId string, jwks string, err error) {
 	return privateKeyPem, keyId, jwks, nil
 }
 
-func GetSelfSignedCertAndKey(name, organization string, validity time.Duration) (certificate, key []byte, err error) {
+func GetSelfSignedCertAndKey(commonName, organization string, validity time.Duration) (certificate, key []byte, err error) {
 	priv, err := rsa.GenerateKey(rand.Reader, 4096)
 	if err != nil {
 		return nil, nil, err
@@ -122,7 +122,7 @@ func GetSelfSignedCertAndKey(name, organization string, validity time.Duration) 
 	template := x509.Certificate{
 		SerialNumber: serialNumber,
 		Subject: pkix.Name{
-			CommonName:   name,
+			CommonName:   commonName,
 			Organization: []string{organization},
 		},
 		NotBefore:             time.Now(),
@@ -130,7 +130,7 @@ func GetSelfSignedCertAndKey(name, organization string, validity time.Duration) 
 		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
 		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 		BasicConstraintsValid: true,
-		DNSNames:              []string{name, fmt.Sprintf("*.%v", name)},
+		DNSNames:              []string{commonName, fmt.Sprintf("*.%v", commonName)},
 	}
 
 	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, &priv.PublicKey, priv)

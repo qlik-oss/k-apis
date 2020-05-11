@@ -1,8 +1,11 @@
 package keys
 
 import (
+	"crypto/x509"
 	"encoding/json"
+	"encoding/pem"
 	"fmt"
+	"reflect"
 	"testing"
 	"time"
 
@@ -32,13 +35,30 @@ func TestGenerate(t *testing.T) {
 }
 
 func Test_getSelfSignedCertAndKey(t *testing.T) {
-	host := "elastic.example"
-	org := "elastic-local-cert"
+	commonName := "elastic.example"
+	organization := "elastic-local-cert"
 	validity := time.Hour * 24 * 365 * 10
-	selfSignedCert, key, err := GetSelfSignedCertAndKey(host, org, validity)
+	selfSignedCert, key, err := GetSelfSignedCertAndKey(commonName, organization, validity)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	fmt.Print(string(selfSignedCert))
-	fmt.Print(string(key))
+	fmt.Println(string(selfSignedCert))
+	fmt.Println(string(key))
+
+	block, _ := pem.Decode(selfSignedCert)
+	if block == nil {
+		t.Fatalf("unexpected error: %v", err)
+	} else if cert, err := x509.ParseCertificate(block.Bytes); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	} else if cert.Subject.CommonName != commonName {
+		t.Fatalf("unexpected error: %v", err)
+	} else if !reflect.DeepEqual(cert.Subject.Organization, []string{organization}) {
+		t.Fatalf("unexpected error: %v", err)
+	} else if cert.Issuer.CommonName != commonName {
+		t.Fatalf("unexpected error: %v", err)
+	} else if !reflect.DeepEqual(cert.Issuer.Organization, []string{organization}) {
+		t.Fatalf("unexpected error: %v", err)
+	} else if !reflect.DeepEqual(cert.DNSNames, []string{commonName, fmt.Sprintf("*.%v", commonName)}) {
+		t.Fatalf("unexpected error: %v", err)
+	}
 }
