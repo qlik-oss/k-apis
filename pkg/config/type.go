@@ -16,11 +16,12 @@ type CRSpec struct {
 	Configs          map[string]NameValues `json:"configs,omitempty" yaml:"configs,omitempty"`
 	ManifestsRoot    string                `json:"manifestsRoot,omitempty" yaml:"manifestsRoot,omitempty"`
 	RotateKeys       string                `json:"rotateKeys,omitempty" yaml:"rotateKeys,omitempty"`
-	TlsCertHostName  string                `json:"tlsCertHostName,omitempty" yaml:"tlsCertHostName,omitempty"`
 	StorageClassName string                `json:"storageClassName,omitempty" yaml:"storageClassName,omitempty"`
 	Git              *Repo                 `json:"git,omitempty" yaml:"git,omitempty"`
 	OpsRunner        *OpsRunner            `json:"opsRunner,omitempty" yaml:"opsRunner,omitempty"`
 	FetchSource      *Repo                 `json:"fetchSource,omitempty" yaml:"fetchSource,omitempty"`
+	TlsCertHost      string                `json:"tlsCertHost,omitempty" yaml:"tlsCertHost,omitempty"`
+	TlsCertOrg       string                `json:"tlsCertOrg,omitempty" yaml:"tlsCertOrg,omitempty"`
 }
 
 type KApiCr struct {
