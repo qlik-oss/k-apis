@@ -72,7 +72,7 @@ func overrideServiceEpriviteKeyJsonFile(cr *config.CRSpec, service *serviceT, ej
 	ePriviteKeyMap["_public_key"] = ejsonPublicKey
 
 	if service.Name == "elastic-infra" {
-		if certPem, keyPem, err := keys.GetSelfSignedCertAndKey(cr.TlsCertHost, cr.TlsCertOrg, time.Hour*24*365*50); err != nil {
+		if certPem, keyPem, err := keys.GetSelfSignedCertAndKey(cr.TlsCertHost, cr.TlsCertOrg, time.Hour*24*365*10); err != nil {
 			return err
 		} else {
 			ePriviteKeyMap["tls_cert"] = base64.StdEncoding.EncodeToString(certPem)

@@ -18,6 +18,11 @@ import (
 	"gopkg.in/square/go-jose.v2"
 )
 
+const (
+	defaultCertCommonName   = "elastic.example"
+	defaultCertOrganization = "elastic-local-cert"
+)
+
 type jsonWebKeySetT struct {
 	Keys []map[string]interface{} `json:"keys"`
 }
@@ -110,6 +115,12 @@ func Generate() (privateKeyPem string, keyId string, jwks string, err error) {
 }
 
 func GetSelfSignedCertAndKey(commonName, organization string, validity time.Duration) (certificate, key []byte, err error) {
+	if commonName == "" {
+		commonName = defaultCertCommonName
+	}
+	if organization == "" {
+		organization = defaultCertOrganization
+	}
 	priv, err := rsa.GenerateKey(rand.Reader, 4096)
 	if err != nil {
 		return nil, nil, err
