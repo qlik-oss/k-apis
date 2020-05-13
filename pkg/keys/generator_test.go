@@ -1,9 +1,13 @@
 package keys
 
 import (
+	"crypto/x509"
 	"encoding/json"
+	"encoding/pem"
 	"fmt"
+	"reflect"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -28,4 +32,33 @@ func TestGenerate(t *testing.T) {
 	assert.Equal(t, keyId, jwksKeyMap["kid"])
 	assert.Contains(t, jwksKeyMap["pem"], "-----BEGIN PUBLIC KEY-----")
 	assert.Contains(t, jwksKeyMap["pem"], "-----END PUBLIC KEY-----")
+}
+
+func Test_getSelfSignedCertAndKey(t *testing.T) {
+	commonName := "elastic.example"
+	organization := "elastic-local-cert"
+	validity := time.Hour * 24 * 365 * 10
+	selfSignedCert, key, err := GetSelfSignedCertAndKey(commonName, organization, validity)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	fmt.Println(string(selfSignedCert))
+	fmt.Println(string(key))
+
+	block, _ := pem.Decode(selfSignedCert)
+	if block == nil {
+		t.Fatalf("unexpected error: %v", err)
+	} else if cert, err := x509.ParseCertificate(block.Bytes); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	} else if cert.Subject.CommonName != commonName {
+		t.Fatalf("unexpected error: %v", err)
+	} else if !reflect.DeepEqual(cert.Subject.Organization, []string{organization}) {
+		t.Fatalf("unexpected error: %v", err)
+	} else if cert.Issuer.CommonName != commonName {
+		t.Fatalf("unexpected error: %v", err)
+	} else if !reflect.DeepEqual(cert.Issuer.Organization, []string{organization}) {
+		t.Fatalf("unexpected error: %v", err)
+	} else if !reflect.DeepEqual(cert.DNSNames, []string{commonName, fmt.Sprintf("*.%v", commonName)}) {
+		t.Fatalf("unexpected error: %v", err)
+	}
 }

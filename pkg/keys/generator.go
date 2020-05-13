@@ -5,12 +5,22 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
+	"crypto/rsa"
 	"crypto/x509"
+	"crypto/x509/pkix"
 	"encoding/base64"
 	"encoding/json"
 	"encoding/pem"
+	"fmt"
+	"math/big"
+	"time"
 
 	"gopkg.in/square/go-jose.v2"
+)
+
+const (
+	defaultCertCommonName   = "elastic.example"
+	defaultCertOrganization = "elastic-local-cert"
 )
 
 type jsonWebKeySetT struct {
@@ -102,4 +112,49 @@ func Generate() (privateKeyPem string, keyId string, jwks string, err error) {
 
 	jwks, err = getJwks(privateKey.Public().(*ecdsa.PublicKey), keyId)
 	return privateKeyPem, keyId, jwks, nil
+}
+
+func GetSelfSignedCertAndKey(commonName, organization string, validity time.Duration) (certificate, key []byte, err error) {
+	if commonName == "" {
+		commonName = defaultCertCommonName
+	}
+	if organization == "" {
+		organization = defaultCertOrganization
+	}
+	priv, err := rsa.GenerateKey(rand.Reader, 4096)
+	if err != nil {
+		return nil, nil, err
+	}
+	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
+	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
+	if err != nil {
+		return nil, nil, fmt.Errorf("ailed to generate serial number: %s", err)
+	}
+	template := x509.Certificate{
+		SerialNumber: serialNumber,
+		Subject: pkix.Name{
+			CommonName:   commonName,
+			Organization: []string{organization},
+		},
+		NotBefore:             time.Now(),
+		NotAfter:              time.Now().Add(validity),
+		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
+		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+		BasicConstraintsValid: true,
+		DNSNames:              []string{commonName, fmt.Sprintf("*.%v", commonName)},
+	}
+
+	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, &priv.PublicKey, priv)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to create certificate: %s", err)
+	}
+	certificate = pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
+
+	privBytes, err := x509.MarshalPKCS8PrivateKey(priv)
+	if err != nil {
+		return nil, nil, fmt.Errorf("unable to marshal private key: %v", err)
+	}
+	key = pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: privBytes})
+
+	return certificate, key, nil
 }

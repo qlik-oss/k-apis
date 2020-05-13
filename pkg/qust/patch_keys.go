@@ -6,8 +6,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/Shopify/ejson"
 	"github.com/qlik-oss/k-apis/pkg/config"
@@ -68,8 +70,33 @@ func initServiceList(cr *config.CRSpec) ([]*serviceT, error) {
 func overrideServiceEpriviteKeyJsonFile(cr *config.CRSpec, service *serviceT, ejsonPublicKey string) error {
 	ePriviteKeyMap := make(map[string]string)
 	ePriviteKeyMap["_public_key"] = ejsonPublicKey
-	ePriviteKeyMap["private_key"] = service.PrivateKey
-	ePriviteKeyMap["kid"] = service.Kid
+
+	if service.Name == "elastic-infra" {
+		if certPem, keyPem, err := keys.GetSelfSignedCertAndKey(cr.TlsCertHost, cr.TlsCertOrg, time.Hour*24*365*10); err != nil {
+			return err
+		} else {
+			ePriviteKeyMap["tls_cert"] = base64.StdEncoding.EncodeToString(certPem)
+			ePriviteKeyMap["tls_key"] = base64.StdEncoding.EncodeToString(keyPem)
+		}
+	} else {
+		ePriviteKeyMap["private_key"] = service.PrivateKey
+		ePriviteKeyMap["kid"] = service.Kid
+
+		if service.Name == "edge-auth" {
+			loginStateKey := make([]byte, 32)
+			if _, err := rand.Read(loginStateKey); err != nil {
+				return err
+			} else {
+				ePriviteKeyMap["login_state_key"] = base64.StdEncoding.EncodeToString(loginStateKey)
+			}
+			cookieKey := make([]byte, 32)
+			if _, err := rand.Read(cookieKey); err != nil {
+				return err
+			} else {
+				ePriviteKeyMap["cookies_keys"] = base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf(`["%v"]`, base64.StdEncoding.EncodeToString(loginStateKey))))
+			}
+		}
+	}
 
 	if err := writeToEjsonFile(ePriviteKeyMap, filepath.Join(cr.GetManifestsRoot(), operatorPatchBaseFolder,
 		operatorKeysBaseFolder, "secrets", service.Name, "eprivate_key.json")); err != nil {
@@ -82,7 +109,9 @@ func overrideKeysEjwksJsonFile(cr *config.CRSpec, services []*serviceT, ejsonPub
 	eJwksMap := make(map[string]string)
 	eJwksMap["_public_key"] = ejsonPublicKey
 	for _, service := range services {
-		eJwksMap[service.Name] = base64.StdEncoding.EncodeToString([]byte(service.JWKS))
+		if service.Name != "elastic-infra" {
+			eJwksMap[service.Name] = base64.StdEncoding.EncodeToString([]byte(service.JWKS))
+		}
 	}
 
 	if err := writeToEjsonFile(eJwksMap, filepath.Join(cr.GetManifestsRoot(), operatorPatchBaseFolder,
@@ -144,11 +173,13 @@ func updateSelectivePatchYaml(selectivePatchYamlBytes []byte, services []*servic
 					//create and append a new "data" element:
 					dataMapItems := yaml.MapItem{Key: "data", Value: make([]yaml.MapItem, 0)}
 					for _, service := range services {
-						// adding "\n" to the end of the value string to force the block scalar yaml format:
-						dataMapItems.Value = append(dataMapItems.Value.([]yaml.MapItem), yaml.MapItem{
-							Key:   fmt.Sprintf("qlik.api.internal-%v", service.Name),
-							Value: fmt.Sprintf(`(( index (ds "data") "%v" | base64.Decode ))`, service.Name) + "\n",
-						})
+						if service.Name != "elastic-infra" {
+							// adding "\n" to the end of the value string to force the block scalar yaml format:
+							dataMapItems.Value = append(dataMapItems.Value.([]yaml.MapItem), yaml.MapItem{
+								Key:   fmt.Sprintf("qlik.api.internal-%v", service.Name),
+								Value: fmt.Sprintf(`(( index (ds "data") "%v" | base64.Decode ))`, service.Name) + "\n",
+							})
+						}
 					}
 					superConfigMapSlice = append(superConfigMapSlice, dataMapItems)
 					//re-marshal SuperConfig:

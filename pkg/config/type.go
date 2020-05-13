@@ -20,6 +20,8 @@ type CRSpec struct {
 	Git              *Repo                 `json:"git,omitempty" yaml:"git,omitempty"`
 	OpsRunner        *OpsRunner            `json:"opsRunner,omitempty" yaml:"opsRunner,omitempty"`
 	FetchSource      *Repo                 `json:"fetchSource,omitempty" yaml:"fetchSource,omitempty"`
+	TlsCertHost      string                `json:"tlsCertHost,omitempty" yaml:"tlsCertHost,omitempty"`
+	TlsCertOrg       string                `json:"tlsCertOrg,omitempty" yaml:"tlsCertOrg,omitempty"`
 }
 
 type KApiCr struct {
