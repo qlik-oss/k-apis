@@ -124,7 +124,7 @@ func createPatches(cr *config.KApiCr, kubeConfigPath string) error {
 		return err
 	}
 
-	// regenerate ejson keys or restore them from cluster
+	// regenerate ejson key pair or restore it from cluster
 	ejsonPublicKey, _, err := processEjsonKeys(cr, defaultEjsonKeydir, kubeConfigPath)
 	if err != nil {
 		return err
@@ -140,7 +140,8 @@ func createPatches(cr *config.KApiCr, kubeConfigPath string) error {
 		return err
 	}
 
-	// regenerate and backup or restore application and ejson keys
+	// rotate all application keys and backup them up to cluster (also backup the ejson key pair)
+	// OR restore all application keys from cluster
 	if err := finalizeKeys(cr, kubeConfigPath, ejsonPublicKey); err != nil {
 		return err
 	}
