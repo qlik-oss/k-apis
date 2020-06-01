@@ -62,6 +62,9 @@ func ProcessSecrets(cr *config.CRSpec, ejsonPublicKey string) error {
 }
 
 func writeEjsonFile(dir string, secrets config.NameValues, ejsonPublicKey string) error {
+	if ejsonPublicKey == "" {
+		return nil
+	}
 	ejsonDataMap := make(map[string]string)
 	ejsonDataMap["_public_key"] = ejsonPublicKey
 	for _, secret := range secrets {
