@@ -140,7 +140,7 @@ func createPatches(cr *config.KApiCr, kubeConfigPath string) error {
 		return err
 	}
 
-	// rotate all application keys and backup them up to cluster (also backup the ejson key pair)
+	// rotate all application keys and back them up to cluster (also backup the ejson key pair)
 	// OR restore all application keys from cluster
 	if err := finalizeKeys(cr, kubeConfigPath, ejsonPublicKey); err != nil {
 		return err
