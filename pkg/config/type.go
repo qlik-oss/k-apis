@@ -83,7 +83,6 @@ type OpsRunner struct {
 	Schedule    string `json:"schedule,omitempty" yaml:"schedule,omitempty"`
 	WatchBranch string `json:"watchBranch,omitempty" yaml:"watchBranch,omitempty"`
 	Image       string `json:"image,omitempty" yaml:"image,omitempty"`
-	CrPvc       string `json:"crPvc,omitempty" yaml:"crPvc,omitempty"`
 }
 
 type CustomMetadata struct {
