@@ -12,12 +12,8 @@ import (
 
 	"github.com/Shopify/ejson"
 	"github.com/qlik-oss/k-apis/pkg/config"
-	crGit "github.com/qlik-oss/k-apis/pkg/git"
 	"github.com/qlik-oss/k-apis/pkg/qust"
 	"github.com/qlik-oss/k-apis/pkg/state"
-	"gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing/transport"
-	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
 )
 
 const (
@@ -26,11 +22,14 @@ const (
 )
 
 func GeneratePatches(cr *config.KApiCr, kubeConfigPath string) {
-	if cr.Spec.Git == nil || cr.Spec.Git.Repository == "" {
-		if err := createPatches(cr, kubeConfigPath); err != nil {
-			log.Printf("error creating patches: %v\n", err)
-		}
-	} else {
+	if err := createPatches(cr, kubeConfigPath); err != nil {
+		log.Printf("error creating patches: %v\n", err)
+	}
+}
+
+/**
+// keeping for future code reference
+else {
 		var r *git.Repository
 		var auth transport.AuthMethod
 		if cr.Spec.Git.UserName != "" && cr.Spec.Git.Password != "" {
@@ -102,8 +101,7 @@ func GeneratePatches(cr *config.KApiCr, kubeConfigPath string) {
 
 		// }
 	}
-}
-
+*/
 func createPatches(cr *config.KApiCr, kubeConfigPath string) error {
 	//process cr.releaseName
 	if err := qust.ProcessReleaseName(cr); err != nil {
