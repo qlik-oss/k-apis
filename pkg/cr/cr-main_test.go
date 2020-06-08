@@ -45,10 +45,10 @@ spec:
   rotateKeys: "None"
   secrets:
     qliksense:
-    - name: mongoDbUri
+    - name: mongodbUri
       value: mongo://mongo:3307
     collections:
-    - name: mongoDbUri
+    - name: mongodbUri
       value: mongo://mongo:3308
 `, filepath.Join(tmpDir, "config"))), &cr); err != nil {
 		t.Fatalf("unexpected error: %v\n", err)
