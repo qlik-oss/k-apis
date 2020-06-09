@@ -110,7 +110,7 @@ func getSelectivePatchTemplate(name string) *config.SelectivePatch {
 		Metadata: &config.CustomMetadata{
 			Name: name,
 		},
-		Enabled: false,
+		Enabled: true,
 	}
 	return su
 }

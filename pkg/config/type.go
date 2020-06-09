@@ -34,7 +34,8 @@ type SelectivePatch struct {
 	ApiVersion string          `yaml:"apiVersion"`
 	Kind       string          `yaml:"kind"`
 	Metadata   *CustomMetadata `yaml:"metadata"`
-	Enabled    bool            `yaml:"enabled,omitempty"`
+	Enabled    bool            `yaml:"enabled"`
+	Default    bool            `yaml:"default,omitempty"`
 	Patches    []types.Patch   `yaml:"patches,omitempty"`
 }
 
