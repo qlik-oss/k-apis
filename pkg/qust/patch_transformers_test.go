@@ -43,42 +43,50 @@ func TestProcessTransfomer(t *testing.T) {
 		t.Logf("%v", list)
 		t.Fail()
 	}
-	if !contains(list, "audit.yaml") {
-		t.Log("expected resources is not created")
-		t.Logf("%v", list)
-		t.Fail()
-	}
+	// caCertificates transformer is bydefault false
+	// if !contains(list, "audit.yaml") {
+	// 	t.Log("expected resources is not created")
+	// 	t.Logf("%v", list)
+	// 	t.Fail()
+	// }
 	bt, err := ioutil.ReadFile(filepath.Join(genTranPath, "qliksense.yaml"))
 	if err != nil {
 		t.Log(err)
 		t.Fail()
 	}
-	if !strings.Contains(string(bt), "name: caCertificates") {
-		t.Log(string(bt))
-		t.Fail()
-	}
+	// if !strings.Contains(string(bt), "name: caCertificates") {
+	// 	t.Log(string(bt))
+	// 	t.Fail()
+	// }
 	if !strings.Contains(string(bt), "name: storageClassName") {
+		t.Log("result string should contain [name: storageClassName]")
 		t.Log(string(bt))
 		t.Fail()
 	}
-	if strings.Contains(string(bt), "labelSelector") {
+	if !strings.Contains(string(bt), "labelSelector") {
+		t.Log("should contain labelSelector")
+		t.Log(string(bt))
+		t.Fail()
+	}
+	if !strings.Contains(string(bt), "labelSelector: app=qliksense,key=storageClassName") {
 		t.Log(string(bt))
 		t.Fail()
 	}
 
-	bt, err = ioutil.ReadFile(filepath.Join(genTranPath, "audit.yaml"))
-	if err != nil {
-		t.Log(err)
-		t.Fail()
-	}
-	if !strings.Contains(string(bt), "caCertificates") {
-		t.Log(string(bt))
-		t.Fail()
-	}
-	if !strings.Contains(string(bt), "labelSelector: app=audit") {
-		t.Log(string(bt))
-		t.Fail()
-	}
+	// caCertificates transformer bydefault false
+	// bt, err = ioutil.ReadFile(filepath.Join(genTranPath, "audit.yaml"))
+	// if err != nil {
+	// 	t.Log(err)
+	// 	t.Fail()
+	// }
+	// if !strings.Contains(string(bt), "caCertificates") {
+	// 	t.Log(string(bt))
+	// 	t.Fail()
+	// }
+	// if !strings.Contains(string(bt), "labelSelector: app=audit") {
+	// 	t.Log(string(bt))
+	// 	t.Fail()
+	// }
 }
 
 func downloadQliksenseK8sForTest() (string, error) {
@@ -89,7 +97,7 @@ func downloadQliksenseK8sForTest() (string, error) {
 
 	if repo, err := git.CloneRepository(tempDir, "https://github.com/qlik-oss/qliksense-k8s", nil); err != nil {
 		return "", err
-	} else if err = git.Checkout(repo, "master", fmt.Sprintf("%v-by-operator-%v", "master", uuid.New().String()), nil); err != nil {
+	} else if err = git.Checkout(repo, "update/qliktrial-1.50.3", fmt.Sprintf("%v-by-operator-%v", "update/qliktrial-1.50.3", uuid.New().String()), nil); err != nil {
 		return "", err
 	}
 	return tempDir, nil
