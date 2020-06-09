@@ -43,21 +43,20 @@ func TestProcessTransfomer(t *testing.T) {
 		t.Logf("%v", list)
 		t.Fail()
 	}
-	// caCertificates transformer is bydefault false
-	// if !contains(list, "audit.yaml") {
-	// 	t.Log("expected resources is not created")
-	// 	t.Logf("%v", list)
-	// 	t.Fail()
-	// }
+	if !contains(list, "audit.yaml") {
+		t.Log("expected resources is not created")
+		t.Logf("%v", list)
+		t.Fail()
+	}
 	bt, err := ioutil.ReadFile(filepath.Join(genTranPath, "qliksense.yaml"))
 	if err != nil {
 		t.Log(err)
 		t.Fail()
 	}
-	// if !strings.Contains(string(bt), "name: caCertificates") {
-	// 	t.Log(string(bt))
-	// 	t.Fail()
-	// }
+	if !strings.Contains(string(bt), "name: caCertificates") {
+		t.Log(string(bt))
+		t.Fail()
+	}
 	if !strings.Contains(string(bt), "name: storageClassName") {
 		t.Log("result string should contain [name: storageClassName]")
 		t.Log(string(bt))
@@ -82,25 +81,10 @@ func TestProcessTransfomer(t *testing.T) {
 		t.Log(string(bt))
 		t.Fail()
 	}
-	if !strings.Contains(string(bt), "labelSelector: app=qliksense,key=storageClassName") {
+	if !strings.Contains(string(bt), "labelSelector: app=audit") {
 		t.Log(string(bt))
 		t.Fail()
 	}
-
-	// caCertificates transformer bydefault false
-	// bt, err = ioutil.ReadFile(filepath.Join(genTranPath, "audit.yaml"))
-	// if err != nil {
-	// 	t.Log(err)
-	// 	t.Fail()
-	// }
-	// if !strings.Contains(string(bt), "caCertificates") {
-	// 	t.Log(string(bt))
-	// 	t.Fail()
-	// }
-	// if !strings.Contains(string(bt), "labelSelector: app=audit") {
-	// 	t.Log(string(bt))
-	// 	t.Fail()
-	// }
 }
 
 func downloadQliksenseK8sForTest() (string, error) {
