@@ -16,7 +16,7 @@ import (
 func ProcessTransfomer(cr *config.CRSpec) error {
 	transformersDir := filepath.Join(cr.GetManifestsRoot(), "manifests", "base", "transformers")
 	destTransDir := filepath.Join(cr.GetManifestsRoot(), ".operator", "transformers")
-	list, err := disabledTansformersList(transformersDir)
+	list, err := enabledTansformersList(transformersDir)
 	if err != nil {
 		return err
 	}
@@ -82,7 +82,7 @@ The geenrated patch for the transformer caCertificates, service audit will look 
 func createSelectivePatchObjectForTransformer(transformerName, appName string) (types.Patch, error) {
 	//patchName := "transformer-"
 	//sp := getSelectivePatchTemplate(patchName)
-	patchBody := getSelectivePatchTemplate(transformerName)
+	patchBody := getSelectivePatchTemplateForTransformer(transformerName)
 	phb, err := yaml.Marshal(patchBody)
 	if err != nil {
 		return types.Patch{}, err
@@ -90,19 +90,25 @@ func createSelectivePatchObjectForTransformer(transformerName, appName string) (
 	p1 := types.Patch{
 		Patch: string(phb),
 	}
-	if appName == "qliksense" {
-		p1.Target = &types.Selector{
-			Gvk: resid.Gvk{
-				Kind: "SelectivePatch",
-			},
-			Name: transformerName,
-		}
-	} else {
-		p1.Target = getSelector("SelectivePatch", appName)
-		p1.Target.Name = transformerName
+	p1.Target = &types.Selector{
+		Gvk: resid.Gvk{
+			Kind: "SelectivePatch",
+		},
+		LabelSelector: "app=" + appName + ",key=" + transformerName,
 	}
-	//sp.Patches = []types.Patch{p1}
 	return p1, nil
+}
+
+func getSelectivePatchTemplateForTransformer(name string) *config.SelectivePatch {
+	su := &config.SelectivePatch{
+		ApiVersion: "qlik.com/v1",
+		Kind:       "SelectivePatch",
+		Metadata: &config.CustomMetadata{
+			Name: name,
+		},
+		Enabled: false,
+	}
+	return su
 }
 
 /**
@@ -139,7 +145,7 @@ func loadExistingOrCreateEmptySelectivePatch(appName, spName, kustDirectory stri
 	return getSelectivePatchTemplate(spName), nil
 }
 
-func disabledTansformersList(baseTransDir string) ([]string, error) {
+func enabledTansformersList(baseTransDir string) ([]string, error) {
 	kustFile := filepath.Join(baseTransDir, "kustomization.yaml")
 	list, err := getResourcesList(kustFile)
 	/*
@@ -161,7 +167,7 @@ func disabledTansformersList(baseTransDir string) ([]string, error) {
 
 	for _, l := range list {
 
-		if !isTransformerEnabled(filepath.Join(baseTransDir, l)) {
+		if isTransformerEnabled(filepath.Join(baseTransDir, l)) {
 			result = append(result, l)
 		}
 	}

@@ -51,7 +51,7 @@ spec:
       value: "yes"
   secrets:
     qliksense:
-    - name: mongoDbUri
+    - name: mongodbUri
       value: mongo://mongo:3307`
 	os.Setenv("YAML_CONF", sampleConfig)
 	return strings.NewReader(sampleConfig)

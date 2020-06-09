@@ -43,6 +43,6 @@ spec:
       value: "yes"
   secrets:
     qliksense:
-    - name: mongoDbUri
+    - name: mongodbUri
       value: mongo://mongo:3307
 ```
