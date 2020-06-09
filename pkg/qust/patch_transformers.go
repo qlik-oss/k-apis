@@ -21,10 +21,6 @@ func ProcessTransfomer(cr *config.CRSpec) error {
 		return err
 	}
 	for svc, nvs := range cr.Secrets {
-		if svc == "qliksense" {
-			// no need to turn off transformer as by default all transformer is global
-			continue
-		}
 		for _, nv := range nvs {
 			if contains(list, nv.Name) {
 				if err := writeTranasformer(destTransDir, svc, nv.Name); err != nil {
@@ -34,10 +30,6 @@ func ProcessTransfomer(cr *config.CRSpec) error {
 		}
 	}
 	for svc, nvs := range cr.Configs {
-		if svc == "qliksense" {
-			// no need to turn off transformer as by default all transformer is global
-			continue
-		}
 		for _, nv := range nvs {
 			if contains(list, nv.Name) {
 				if err := writeTranasformer(destTransDir, svc, nv.Name); err != nil {
@@ -98,18 +90,12 @@ func createSelectivePatchObjectForTransformer(transformerName, appName string) (
 	p1 := types.Patch{
 		Patch: string(phb),
 	}
-	if appName == "qliksense" {
-		p1.Target = &types.Selector{
-			Gvk: resid.Gvk{
-				Kind: "SelectivePatch",
-			},
-			Name: transformerName,
-		}
-	} else {
-		p1.Target = getSelector("SelectivePatch", appName)
-		p1.Target.Name = transformerName
+	p1.Target = &types.Selector{
+		Gvk: resid.Gvk{
+			Kind: "SelectivePatch",
+		},
+		LabelSelector: "app=" + appName + ",key=" + transformerName,
 	}
-	//sp.Patches = []types.Patch{p1}
 	return p1, nil
 }
 
