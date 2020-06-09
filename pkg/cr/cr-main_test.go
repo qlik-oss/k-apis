@@ -54,21 +54,10 @@ spec:
 		t.Fatalf("unexpected error: %v\n", err)
 	}
 
-	//if ejsonPublicKey, ejsonPrivateKey, err := ejson.GenerateKeypair(); err != nil {
-	//	t.Fatalf("unexpected error: %v\n", err)
-	//} else if err := os.Mkdir(filepath.Join(tmpDir, "ejson-keys"), os.ModePerm); err != nil {
-	//	t.Fatalf("unexpected error: %v\n", err)
-	//} else if err := ioutil.WriteFile(filepath.Join(tmpDir, "ejson-keys", ejsonPublicKey), []byte(ejsonPrivateKey), os.ModePerm); err != nil {
-	//	t.Fatalf("unexpected error: %v\n", err)
-	//} else if err := os.Setenv("EJSON_KEYDIR", filepath.Join(tmpDir, "ejson-keys")); err != nil {
-	//	t.Fatalf("unexpected error: %v\n", err)
-	//} else if err := os.Unsetenv("EJSON_KEY"); err != nil {
-	//	t.Fatalf("unexpected error: %v\n", err)
-	//}
-
 	GeneratePatches(&cr, "won't-use")
 
-	if manifest, err := executeKustomizeBuild(filepath.Join(configPath, "manifests", "base")); err != nil {
+	//os.Unsetenv("EJSON_KEY")
+	if manifest, err := executeKustomizeBuild(filepath.Join(configPath, "manifests", "base", "resources", "collections")); err != nil {
 		t.Fatalf("unexpected kustomize error: %v\n", err)
 	} else if err := ioutil.WriteFile(filepath.Join(tmpDir, "manifest.yaml"), manifest, os.ModePerm); err != nil {
 		t.Fatalf("unexpected error: %v\n", err)
