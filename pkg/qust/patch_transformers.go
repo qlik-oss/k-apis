@@ -15,6 +15,13 @@ import (
 
 func ProcessTransfomer(cr *config.CRSpec) error {
 	destTransDir := filepath.Join(cr.GetManifestsRoot(), ".operator", "transformers")
+<<<<<<< HEAD
+=======
+	list, err := enabledTansformersList(transformersDir)
+	if err != nil {
+		return err
+	}
+>>>>>>> master
 	for svc, nvs := range cr.Secrets {
 		for _, nv := range nvs {
 			if err := writeTranasformer(destTransDir, svc, nv.Name); err != nil {
