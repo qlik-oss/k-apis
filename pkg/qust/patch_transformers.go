@@ -14,29 +14,19 @@ import (
 )
 
 func ProcessTransfomer(cr *config.CRSpec) error {
-	transformersDir := filepath.Join(cr.GetManifestsRoot(), "manifests", "base", "transformers")
 	destTransDir := filepath.Join(cr.GetManifestsRoot(), ".operator", "transformers")
-	list, err := enabledTansformersList(transformersDir)
-	if err != nil {
-		return err
-	}
 	for svc, nvs := range cr.Secrets {
 		for _, nv := range nvs {
-			if contains(list, nv.Name) {
-				if err := writeTranasformer(destTransDir, svc, nv.Name); err != nil {
-					return err
-				}
+			if err := writeTranasformer(destTransDir, svc, nv.Name); err != nil {
+				return err
 			}
 		}
 	}
 	for svc, nvs := range cr.Configs {
 		for _, nv := range nvs {
-			if contains(list, nv.Name) {
-				if err := writeTranasformer(destTransDir, svc, nv.Name); err != nil {
-					return err
-				}
+			if err := writeTranasformer(destTransDir, svc, nv.Name); err != nil {
+				return err
 			}
-
 		}
 	}
 	// for backward qliksense-k8s compatilibity.
