@@ -3,6 +3,7 @@ package state
 import (
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path"
 	"path/filepath"
@@ -90,7 +91,12 @@ func Restore(kubeconfigPath, secretName, namespaceName string, backupInfos []Bac
 	for _, backupInfo := range backupInfos {
 		archiveFilePath := path.Join(tmpDir, fmt.Sprintf("%v.tar.gz", backupInfo.Key))
 		if data, ok := secret.Data[backupInfo.Key]; !ok {
-			return fmt.Errorf("secret %v in namespace: %v does not have binaryData for key: %v", secretName, namespaceName, backupInfo.Key)
+			return &kubeApiErrors.StatusError{ErrStatus: metaV1.Status{
+				Status:  metaV1.StatusFailure,
+				Code:    http.StatusNotFound,
+				Reason:  metaV1.StatusReasonNotFound,
+				Message: fmt.Sprintf("key: %v not found in secret: %v", backupInfo.Key, secretName),
+			}}
 		} else if err := ioutil.WriteFile(archiveFilePath, data, os.ModePerm); err != nil {
 			return err
 		} else if err := tarGzArchiver.Unarchive(archiveFilePath, backupInfo.Directory); err != nil {
