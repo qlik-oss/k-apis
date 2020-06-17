@@ -6,10 +6,10 @@ import (
 	"sort"
 	"time"
 
-	"gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing"
-	"gopkg.in/src-d/go-git.v4/plumbing/object"
-	"gopkg.in/src-d/go-git.v4/plumbing/transport"
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/object"
+	"github.com/go-git/go-git/v5/plumbing/transport"
 )
 
 func CloneRepository(path string, repoUrl string, auth transport.AuthMethod) (*git.Repository, error) {
@@ -35,7 +35,8 @@ func Checkout(r *git.Repository, ref string, toBranch string, auth transport.Aut
 	}
 
 	checkoutOptions := &git.CheckoutOptions{
-		Hash: *hash,
+		Hash:  *hash,
+		Force: true,
 	}
 	if toBranch != "" {
 		checkoutOptions.Create = true
@@ -45,7 +46,16 @@ func Checkout(r *git.Repository, ref string, toBranch string, auth transport.Aut
 	if err := workTree.Checkout(checkoutOptions); err != nil {
 		return err
 	}
-	return nil
+
+	//it seems that if the git history included a directory case change
+	//(delete and re-add with different letter case), we need this second checkout:
+	if refHead, err := r.Head(); err != nil {
+		return err
+	} else if branchName := refHead.Name(); branchName != "" {
+		return workTree.Checkout(&git.CheckoutOptions{Branch: branchName, Force: true})
+	} else {
+		return workTree.Checkout(&git.CheckoutOptions{Hash: refHead.Hash(), Force: true})
+	}
 }
 
 func AddCommit(r *git.Repository, author string) error {

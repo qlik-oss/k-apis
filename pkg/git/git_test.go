@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"sort"
 	"strings"
 	"testing"
@@ -174,5 +175,31 @@ func TestGetRemoteReferences(t *testing.T) {
 	t.Logf("tags: %v\n", remoteReferencesList[0].Tags)
 	if !sort.IsSorted(sort.Reverse(sort.StringSlice(remoteReferencesList[0].Tags))) {
 		t.Fatal("expected tags to be sorted in reverse order")
+	}
+}
+
+func TestCheckoutQlikRepo(t *testing.T) {
+	tmpDir, err := ioutil.TempDir("", "")
+	if err != nil {
+		t.Fatalf("unexpected error: %v\n", err)
+	}
+	defer os.RemoveAll(tmpDir)
+	configPath := filepath.Join(tmpDir, "config")
+	if repo, err := CloneRepository(configPath, "https://github.com/qlik-oss/qliksense-k8s", nil); err != nil {
+		t.Fatalf("unexpected error: %v\n", err)
+	} else if err := Checkout(repo, "v0.0.8", "", nil); err != nil {
+		t.Fatalf("unexpected error: %v\n", err)
+	}
+	cmd := exec.Command("git", "status")
+	cmd.Dir = configPath
+	if out, err := cmd.Output(); err != nil {
+		t.Fatalf("unexpected error: %v\n", err)
+	} else {
+		output := string(out)
+		fmt.Println(output)
+		treeCleanMessage := "nothing to commit, working tree clean"
+		if !strings.Contains(output, treeCleanMessage) {
+			t.Fatalf(`expected to see message: "%v" in the output, but didn't see it`, treeCleanMessage)
+		}
 	}
 }
