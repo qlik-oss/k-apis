@@ -19,6 +19,8 @@ import (
 )
 
 func TestGeneratePatches(t *testing.T) {
+	t.Skip()
+
 	tmpDir, err := ioutil.TempDir("", "")
 	if err != nil {
 		t.Fatalf("unexpected error: %v\n", err)
