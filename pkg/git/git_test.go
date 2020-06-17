@@ -202,8 +202,12 @@ func TestCheckoutQlikRepo(t *testing.T) {
 		if !strings.Contains(output, treeCleanMessage) {
 			failMsg := fmt.Sprintf(`expected to see message: "%v" in the output, but didn't see it`, treeCleanMessage)
 			if runtime.GOOS == "windows" {
-				fmt.Println(failMsg)
-				fmt.Println("you are running on Windows and hopefully it's all related to CRLF and for now we don't know what else to do about this...")
+				if !strings.Contains(output, "deleted:") {
+					fmt.Println(failMsg)
+					fmt.Println("you are running on Windows and hopefully it's all related to CRLF and for now we don't know what else to do about this...")
+				} else {
+					t.Fatalf(failMsg)
+				}
 			} else {
 				t.Fatalf(failMsg)
 			}
