@@ -7,14 +7,13 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/Shopify/ejson"
-
-	"k8s.io/apimachinery/pkg/api/errors"
-
 	"github.com/qlik-oss/k-apis/pkg/config"
 	"github.com/qlik-oss/k-apis/pkg/qust"
 	"github.com/qlik-oss/k-apis/pkg/state"
+	"k8s.io/apimachinery/pkg/api/errors"
 )
 
 const (
@@ -127,7 +126,7 @@ func createPatches(cr *config.KApiCr, keysAction config.KeysAction, kubeConfigPa
 		return err
 	}
 
-	// regenerate ejson key pair or restore it from cluster
+	// regenerate the ejson key pair, or restore it from the cluster, or read it from the environment
 	ejsonPublicKey, _, err := processEjsonKeys(cr, keysAction, kubeConfigPath, defaultEjsonKeydir)
 	if err != nil {
 		return err
@@ -188,9 +187,56 @@ func finalizeKeys(cr *config.KApiCr, keysAction config.KeysAction, kubeConfigPat
 	return nil
 }
 
-func processEjsonKeys(cr *config.KApiCr, keysAction config.KeysAction, kubeConfigPath string, defaultEjsonKeydir string) (ejsonPublicKey, ejsonPrivateKey string, err error) {
+func extractEjsonKeysFromTheEnvironment() (ejsonPublicKey, ejsonPrivateKey string) {
+	if ejsonPrivateKey = os.Getenv("EJSON_KEY"); ejsonPrivateKey != "" {
+		ejsonKeyDir := os.Getenv("EJSON_KEYDIR")
+		if ejsonKeyDir == "" {
+			ejsonKeyDir = defaultEjsonKeydir
+		}
+		if fileInfos, err := ioutil.ReadDir(ejsonKeyDir); err != nil {
+			log.Printf("failed listing the EJSON_KEYDIR: %v\n", ejsonKeyDir)
+			return "", ""
+		} else {
+			for _, fileInfo := range fileInfos {
+				if fileInfo.Mode().IsRegular() {
+					possibleEjsonPublicKeyFilePath := filepath.Join(ejsonKeyDir, fileInfo.Name())
+					if fileContent, err := ioutil.ReadFile(possibleEjsonPublicKeyFilePath); err != nil {
+						log.Printf("failed reading file: %v while trying to find the EJSON publicKey\n", possibleEjsonPublicKeyFilePath)
+						return "", ""
+					} else if strings.TrimSpace(string(fileContent)) == ejsonPrivateKey {
+						ejsonPublicKey = fileInfo.Name()
+						return ejsonPublicKey, ejsonPrivateKey
+					}
+				}
+			}
+		}
+	} else {
+		ejsonKeyDir := os.Getenv("EJSON_KEYDIR")
+		if ejsonKeyDir == "" {
+			ejsonKeyDir = defaultEjsonKeydir
+		}
+		if fileInfos, err := ioutil.ReadDir(ejsonKeyDir); err != nil {
+			log.Printf("failed listing the EJSON_KEYDIR: %v\n", ejsonKeyDir)
+			return "", ""
+		} else if len(fileInfos) == 1 {
+			possibleEjsonPublicKeyFilePath := filepath.Join(ejsonKeyDir, fileInfos[0].Name())
+			if fileContent, err := ioutil.ReadFile(possibleEjsonPublicKeyFilePath); err != nil {
+				log.Printf("failed reading file: %v while trying to find the EJSON publicKey\n", possibleEjsonPublicKeyFilePath)
+				return "", ""
+			} else {
+				ejsonPublicKey = fileInfos[0].Name()
+				ejsonPrivateKey = strings.TrimSpace(string(fileContent))
+				return ejsonPublicKey, ejsonPrivateKey
+			}
+		}
+	}
+	return "", ""
+}
+
+func processEjsonKeys(cr *config.KApiCr, keysAction config.KeysAction, kubeConfigPath string, defaultEjsonKeydir string) (ejsonPublicKey string, ejsonPrivateKey string, err error) {
 	if keysAction == config.KeysActionDoNothing {
-		return "", "", nil
+		ejsonPublicKey, ejsonPrivateKey = extractEjsonKeysFromTheEnvironment()
+		return ejsonPublicKey, ejsonPrivateKey, nil
 	}
 
 	keysFound := false
