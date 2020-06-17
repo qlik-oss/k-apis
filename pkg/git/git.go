@@ -35,8 +35,7 @@ func Checkout(r *git.Repository, ref string, toBranch string, auth transport.Aut
 	}
 
 	checkoutOptions := &git.CheckoutOptions{
-		Hash:  *hash,
-		Force: true,
+		Hash: *hash,
 	}
 	if toBranch != "" {
 		checkoutOptions.Create = true
