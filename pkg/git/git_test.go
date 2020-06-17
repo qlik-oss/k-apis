@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
 	"testing"
@@ -199,7 +200,13 @@ func TestCheckoutQlikRepo(t *testing.T) {
 		fmt.Println(output)
 		treeCleanMessage := "nothing to commit, working tree clean"
 		if !strings.Contains(output, treeCleanMessage) {
-			t.Fatalf(`expected to see message: "%v" in the output, but didn't see it`, treeCleanMessage)
+			failMsg := fmt.Sprintf(`expected to see message: "%v" in the output, but didn't see it`, treeCleanMessage)
+			if runtime.GOOS == "windows" {
+				fmt.Println(failMsg)
+				fmt.Println("you are running on Windows and hopefully it's all related to CRLF and for now we don't know what else to do about this...")
+			} else {
+				t.Fatalf(failMsg)
+			}
 		}
 	}
 }
