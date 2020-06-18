@@ -15,7 +15,6 @@ type CRSpec struct {
 	Secrets          map[string]NameValues `json:"secrets,omitempty" yaml:"secrets,omitempty"`
 	Configs          map[string]NameValues `json:"configs,omitempty" yaml:"configs,omitempty"`
 	ManifestsRoot    string                `json:"manifestsRoot,omitempty" yaml:"manifestsRoot,omitempty"`
-	RotateKeys       string                `json:"rotateKeys,omitempty" yaml:"rotateKeys,omitempty"`
 	StorageClassName string                `json:"storageClassName,omitempty" yaml:"storageClassName,omitempty"`
 	Git              *Repo                 `json:"git,omitempty" yaml:"git,omitempty"`
 	OpsRunner        *OpsRunner            `json:"opsRunner,omitempty" yaml:"opsRunner,omitempty"`
@@ -91,3 +90,11 @@ type CustomMetadata struct {
 	Labels      map[string]string `json:"labels,omitempty" yaml:"labels,omitempty"`
 	Annotations map[string]string `json:"annotations,omitempty" yaml:"annotations,omitempty"`
 }
+
+type KeysAction string
+
+const (
+	KeysActionRestoreOrRotate KeysAction = ""
+	KeysActionForceRotate     KeysAction = "ForceRotate"
+	KeysActionDoNothing       KeysAction = "DoNothing"
+)

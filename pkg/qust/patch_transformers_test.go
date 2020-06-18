@@ -95,7 +95,7 @@ func downloadQliksenseK8sForTest() (string, error) {
 
 	if repo, err := git.CloneRepository(tempDir, "https://github.com/qlik-oss/qliksense-k8s", nil); err != nil {
 		return "", err
-	} else if err = git.Checkout(repo, "v1.50.3", fmt.Sprintf("%v-by-operator-%v", "v1.50.3", uuid.New().String()), nil); err != nil {
+	} else if err = git.Checkout(repo, "v1.50.3", fmt.Sprintf("%v-by-operator-%v", "update/qliktrial-1.50.3", uuid.New().String()), nil); err != nil {
 		return "", err
 	}
 	return tempDir, nil
