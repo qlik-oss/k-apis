@@ -7,13 +7,13 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-
-	"github.com/pkg/errors"
+	"strings"
 
 	"github.com/Shopify/ejson"
 	"github.com/qlik-oss/k-apis/pkg/config"
 	"github.com/qlik-oss/k-apis/pkg/qust"
 	"github.com/qlik-oss/k-apis/pkg/state"
+	"k8s.io/apimachinery/pkg/api/errors"
 )
 
 const (
@@ -21,8 +21,8 @@ const (
 	defaultBackupObjectName = "operator-state-backup"
 )
 
-func GeneratePatches(cr *config.KApiCr, kubeConfigPath string) {
-	if err := createPatches(cr, kubeConfigPath); err != nil {
+func GeneratePatches(cr *config.KApiCr, keysAction config.KeysAction, kubeConfigPath string) {
+	if err := createPatches(cr, keysAction, kubeConfigPath); err != nil {
 		log.Printf("error creating patches: %v\n", err)
 	}
 }
@@ -102,7 +102,11 @@ else {
 		// }
 	}
 */
-func createPatches(cr *config.KApiCr, kubeConfigPath string) error {
+func createPatches(cr *config.KApiCr, keysAction config.KeysAction, kubeConfigPath string) error {
+	if keysAction != config.KeysActionForceRotate && keysAction != config.KeysActionDoNothing {
+		keysAction = config.KeysActionRestoreOrRotate
+	}
+
 	//process cr.releaseName
 	if err := qust.ProcessReleaseName(cr); err != nil {
 		return err
@@ -122,8 +126,8 @@ func createPatches(cr *config.KApiCr, kubeConfigPath string) error {
 		return err
 	}
 
-	// regenerate ejson key pair or restore it from cluster
-	ejsonPublicKey, _, err := processEjsonKeys(cr, defaultEjsonKeydir, kubeConfigPath)
+	// regenerate the ejson key pair, or restore it from the cluster, or read it from the environment
+	ejsonPublicKey, _, err := processEjsonKeys(cr, keysAction, kubeConfigPath, defaultEjsonKeydir)
 	if err != nil {
 		return err
 	}
@@ -140,41 +144,114 @@ func createPatches(cr *config.KApiCr, kubeConfigPath string) error {
 
 	// rotate all application keys and back them up to cluster (also backup the ejson key pair)
 	// OR restore all application keys from cluster
-	if err := finalizeKeys(cr, kubeConfigPath, ejsonPublicKey); err != nil {
+	if err := finalizeKeys(cr, keysAction, kubeConfigPath, ejsonPublicKey); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func finalizeKeys(cr *config.KApiCr, kubeConfigPath string, ejsonPublicKey string) error {
-	if cr.Spec.RotateKeys == "yes" {
+func finalizeKeys(cr *config.KApiCr, keysAction config.KeysAction, kubeConfigPath string, ejsonPublicKey string) error {
+	if keysAction == config.KeysActionDoNothing {
+		log.Println("no keys operations")
+		return nil
+	}
+
+	keysFound := false
+	if keysAction == config.KeysActionRestoreOrRotate {
+		if err := state.Restore(kubeConfigPath, getBackupObjectName(cr), cr.GetObjectMeta().GetNamespace(), []state.BackupDir{
+			{Key: "operator-keys", Directory: filepath.Join(cr.Spec.GetManifestsRoot(), ".operator/keys")},
+		}); err != nil {
+			if !errors.IsNotFound(err) {
+				return fmt.Errorf("error restoring keys from the cluster: %w", err)
+			}
+		} else {
+			keysFound = true
+		}
+	}
+
+	if keysAction == config.KeysActionForceRotate || !keysFound {
 		if err := qust.GenerateKeys(cr.Spec, ejsonPublicKey); err != nil {
-			return errors.Wrap(err, "error generating application keys")
+			return fmt.Errorf("error generating application keys: %w", err)
 		} else {
 			log.Println("backing up keys to the cluster")
 			if err := state.Backup(kubeConfigPath, getBackupObjectName(cr), cr.GetObjectMeta().GetNamespace(), cr.GetName(), []state.BackupDir{
 				{Key: "operator-keys", Directory: filepath.Join(cr.Spec.GetManifestsRoot(), ".operator/keys")},
 				{Key: "ejson-keys", Directory: getEjsonKeyDir(defaultEjsonKeydir)},
 			}); err != nil {
-				return errors.Wrap(err, "error backing up keys to the cluster")
+				return fmt.Errorf("error backing up keys to the cluster: %w", err)
 			}
 		}
-	} else if cr.Spec.RotateKeys == "no" {
-		log.Println("restoring keys from the cluster")
-		if err := state.Restore(kubeConfigPath, getBackupObjectName(cr), cr.GetObjectMeta().GetNamespace(), []state.BackupDir{
-			{Key: "operator-keys", Directory: filepath.Join(cr.Spec.GetManifestsRoot(), ".operator/keys")},
-		}); err != nil {
-			return errors.Wrap(err, "error restoring keys from the cluster")
-		}
-	} else if cr.Spec.RotateKeys == "None" {
-		log.Println("no keys operations")
 	}
+
 	return nil
 }
 
-func processEjsonKeys(cr *config.KApiCr, defaultEjsonKeydir string, kubeConfigPath string) (ejsonPublicKey, ejsonPrivateKey string, err error) {
-	if cr.Spec.RotateKeys == "yes" {
+func extractEjsonKeysFromTheEnvironment() (ejsonPublicKey, ejsonPrivateKey string) {
+	if ejsonPrivateKey = os.Getenv("EJSON_KEY"); ejsonPrivateKey != "" {
+		ejsonKeyDir := os.Getenv("EJSON_KEYDIR")
+		if ejsonKeyDir == "" {
+			ejsonKeyDir = defaultEjsonKeydir
+		}
+		if fileInfos, err := ioutil.ReadDir(ejsonKeyDir); err != nil {
+			log.Printf("failed listing the EJSON_KEYDIR: %v\n", ejsonKeyDir)
+			return "", ""
+		} else {
+			for _, fileInfo := range fileInfos {
+				if fileInfo.Mode().IsRegular() {
+					possibleEjsonPublicKeyFilePath := filepath.Join(ejsonKeyDir, fileInfo.Name())
+					if fileContent, err := ioutil.ReadFile(possibleEjsonPublicKeyFilePath); err != nil {
+						log.Printf("failed reading file: %v while trying to find the EJSON publicKey\n", possibleEjsonPublicKeyFilePath)
+						return "", ""
+					} else if strings.TrimSpace(string(fileContent)) == ejsonPrivateKey {
+						ejsonPublicKey = fileInfo.Name()
+						return ejsonPublicKey, ejsonPrivateKey
+					}
+				}
+			}
+		}
+	} else {
+		ejsonKeyDir := os.Getenv("EJSON_KEYDIR")
+		if ejsonKeyDir == "" {
+			ejsonKeyDir = defaultEjsonKeydir
+		}
+		if fileInfos, err := ioutil.ReadDir(ejsonKeyDir); err != nil {
+			log.Printf("failed listing the EJSON_KEYDIR: %v\n", ejsonKeyDir)
+			return "", ""
+		} else if len(fileInfos) == 1 {
+			possibleEjsonPublicKeyFilePath := filepath.Join(ejsonKeyDir, fileInfos[0].Name())
+			if fileContent, err := ioutil.ReadFile(possibleEjsonPublicKeyFilePath); err != nil {
+				log.Printf("failed reading file: %v while trying to find the EJSON publicKey\n", possibleEjsonPublicKeyFilePath)
+				return "", ""
+			} else {
+				ejsonPublicKey = fileInfos[0].Name()
+				ejsonPrivateKey = strings.TrimSpace(string(fileContent))
+				return ejsonPublicKey, ejsonPrivateKey
+			}
+		}
+	}
+	return "", ""
+}
+
+func processEjsonKeys(cr *config.KApiCr, keysAction config.KeysAction, kubeConfigPath string, defaultEjsonKeydir string) (ejsonPublicKey string, ejsonPrivateKey string, err error) {
+	if keysAction == config.KeysActionDoNothing {
+		ejsonPublicKey, ejsonPrivateKey = extractEjsonKeysFromTheEnvironment()
+		return ejsonPublicKey, ejsonPrivateKey, nil
+	}
+
+	keysFound := false
+	if keysAction == config.KeysActionRestoreOrRotate {
+		if ejsonPublicKey, ejsonPrivateKey, err = restoreEjsonKeysFromCluster(cr, defaultEjsonKeydir, kubeConfigPath); err != nil {
+			if !errors.IsNotFound(err) {
+				log.Printf("error loading an ejson key pair from local storage: %v\n", err)
+				return "", "", err
+			}
+		} else {
+			keysFound = true
+		}
+	}
+
+	if keysAction == config.KeysActionForceRotate || !keysFound {
 		if ejsonPublicKey, ejsonPrivateKey, err = ejson.GenerateKeypair(); err != nil {
 			log.Printf("error generating an ejson key pair: %v\n", err)
 			return "", "", err
@@ -182,14 +259,8 @@ func processEjsonKeys(cr *config.KApiCr, defaultEjsonKeydir string, kubeConfigPa
 			log.Printf("error rewriting ejson keys: %v\n", err)
 			return "", "", err
 		}
-	} else if cr.Spec.RotateKeys == "no" {
-		if ejsonPublicKey, ejsonPrivateKey, err = restoreEjsonKeysFromCluster(cr, defaultEjsonKeydir, kubeConfigPath); err != nil {
-			log.Printf("error loading an ejson key pair from local storage: %v\n", err)
-			return "", "", err
-		}
-	} else if cr.Spec.RotateKeys != "None" {
-		log.Panic("rotateKeys is not one of yes/no/None")
 	}
+
 	return ejsonPublicKey, ejsonPrivateKey, err
 }
 

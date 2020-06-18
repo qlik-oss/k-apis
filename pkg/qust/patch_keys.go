@@ -51,20 +51,17 @@ func initServiceList(cr *config.CRSpec) ([]*serviceT, error) {
 		operatorKeysBaseFolder, "secrets")
 
 	var serviceList []*serviceT
-	err := filepath.Walk(prePatchedSecretsDirPath, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if info.IsDir() {
-			serviceList = append(serviceList, &serviceT{Name: info.Name()})
-		}
-		return nil
-	})
-	if err != nil {
+	if fileInfos, err := ioutil.ReadDir(prePatchedSecretsDirPath); err != nil {
 		return nil, err
+	} else {
+		for _, fileInfo := range fileInfos {
+			if fileInfo.IsDir() {
+				serviceList = append(serviceList, &serviceT{Name: fileInfo.Name()})
+			}
+		}
 	}
 
-	return append(serviceList[:0], serviceList[0+1:]...), nil
+	return serviceList, nil
 }
 
 func overrideServiceEpriviteKeyJsonFile(cr *config.CRSpec, service *serviceT, ejsonPublicKey string) error {
