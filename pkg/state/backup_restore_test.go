@@ -13,9 +13,9 @@ import (
 )
 
 func TestBackupRestore(t *testing.T) {
-
-	//Disabling this test by default, since tested methods make k8s API calls
-	t.SkipNow()
+	if os.Getenv("EXECUTE_K8S_TESTS") != "true" {
+		t.SkipNow()
+	}
 
 	usr, err := user.Current()
 	assert.NoError(t, err)
@@ -27,7 +27,7 @@ func TestBackupRestore(t *testing.T) {
 	assert.NoError(t, err)
 	defer os.RemoveAll(targetDir)
 
-	err = Backup(filepath.Join(usr.HomeDir, ".kube", "config"), "test", "", "", []BackupDir{{Key: "operator-keys", Directory: sourceDir}})
+	err = Backup(filepath.Join(usr.HomeDir, ".kube", "config"), "test", "", []BackupDir{{Key: "operator-keys", Directory: sourceDir}})
 	assert.NoError(t, err)
 
 	err = Restore(filepath.Join(usr.HomeDir, ".kube", "config"), "test", "", []BackupDir{{Key: "operator-keys", Directory: targetDir}})

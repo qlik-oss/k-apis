@@ -8,13 +8,12 @@ import (
 	"path"
 	"path/filepath"
 
+	"github.com/qlik-oss/k-apis/pkg/utils"
+
 	"github.com/mholt/archiver/v3"
 	v1 "k8s.io/api/core/v1"
 	kubeApiErrors "k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	clientV1 "k8s.io/client-go/kubernetes/typed/core/v1"
-	"k8s.io/client-go/tools/clientcmd"
 )
 
 type BackupDir struct {
@@ -25,17 +24,13 @@ type BackupDir struct {
 const (
 	releaseLabelKey          = "release"
 	defaultReleaseLabelValue = "qliksense"
-	defaultNamespaceName     = "default"
 )
 
-func Backup(kubeconfigPath, secretName, namespaceName, releaseLabelValue string, backupDirs []BackupDir) error {
-	if namespaceName == "" {
-		namespaceName = defaultNamespaceName
-	}
+func Backup(kubeconfigPath, secretName, releaseLabelValue string, backupDirs []BackupDir) error {
 	if releaseLabelValue == "" {
 		releaseLabelValue = defaultReleaseLabelValue
 	}
-	secretsClient, err := getSecretsClient(kubeconfigPath, namespaceName)
+	secretsClient, err := utils.GetSecretsClient(kubeconfigPath)
 	if err != nil {
 		return err
 	}
@@ -50,9 +45,8 @@ func Backup(kubeconfigPath, secretName, namespaceName, releaseLabelValue string,
 		//doesn't exist, create:
 		_, err = secretsClient.Create(&v1.Secret{
 			ObjectMeta: metaV1.ObjectMeta{
-				Name:      secretName,
-				Namespace: namespaceName,
-				Labels:    map[string]string{releaseLabelKey: releaseLabelValue},
+				Name:   secretName,
+				Labels: map[string]string{releaseLabelKey: releaseLabelValue},
 			},
 			Data: binaryData,
 		})
@@ -65,11 +59,7 @@ func Backup(kubeconfigPath, secretName, namespaceName, releaseLabelValue string,
 }
 
 func Restore(kubeconfigPath, secretName, namespaceName string, backupInfos []BackupDir) error {
-	if namespaceName == "" {
-		namespaceName = defaultNamespaceName
-	}
-
-	secretsClient, err := getSecretsClient(kubeconfigPath, namespaceName)
+	secretsClient, err := utils.GetSecretsClient(kubeconfigPath)
 	if err != nil {
 		return err
 	}
@@ -105,21 +95,6 @@ func Restore(kubeconfigPath, secretName, namespaceName string, backupInfos []Bac
 	}
 
 	return nil
-}
-
-func getSecretsClient(kubeconfigPath string, namespaceName string) (clientV1.SecretInterface, error) {
-	config, err := clientcmd.BuildConfigFromFlags("", kubeconfigPath)
-	if err != nil {
-		return nil, err
-	}
-
-	clientSet, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		return nil, err
-	}
-
-	secretsClient := clientSet.CoreV1().Secrets(namespaceName)
-	return secretsClient, nil
 }
 
 func getBinaryData(backupDirs []BackupDir) (map[string][]byte, error) {

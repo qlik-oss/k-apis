@@ -10,6 +10,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/qlik-oss/k-apis/pkg/utils"
+
 	"github.com/Shopify/ejson"
 
 	"github.com/qlik-oss/k-apis/pkg/qust"
@@ -17,9 +19,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 	clientV1 "k8s.io/client-go/kubernetes/typed/core/v1"
-	"k8s.io/client-go/tools/clientcmd"
 
 	"gopkg.in/yaml.v2"
 
@@ -96,8 +96,9 @@ resources:
 }
 
 func TestGeneratePatches_KeysAction(t *testing.T) {
-	//Disabling this test by default, since tested methods make k8s API calls
-	t.SkipNow()
+	if os.Getenv("EXECUTE_K8S_TESTS") != "true" {
+		t.SkipNow()
+	}
 
 	type keysActionTestCaseT struct {
 		name            string
@@ -149,7 +150,7 @@ func TestGeneratePatches_KeysAction(t *testing.T) {
 					} else if err := qust.GenerateKeys(cr.Spec, ejsonPublicKey); err != nil {
 						t.Fatalf("unexpected error: %v\n", err)
 					} else {
-						if err := state.Backup(kubeconfigPath, getBackupObjectName(cr), cr.GetObjectMeta().GetNamespace(), cr.GetName(), []state.BackupDir{
+						if err := state.Backup(kubeconfigPath, getBackupObjectName(cr), cr.GetName(), []state.BackupDir{
 							{Key: "operator-keys", Directory: filepath.Join(cr.Spec.GetManifestsRoot(), ".operator/keys")},
 							{Key: "ejson-keys", Directory: filepath.Join(tmpDir, "ejson-keys")},
 						}); err != nil {
@@ -255,7 +256,7 @@ func TestGeneratePatches_KeysAction(t *testing.T) {
 					} else if err := qust.GenerateKeys(cr.Spec, ejsonPublicKey); err != nil {
 						t.Fatalf("unexpected error: %v\n", err)
 					} else {
-						if err := state.Backup(kubeconfigPath, getBackupObjectName(cr), cr.GetObjectMeta().GetNamespace(), cr.GetName(), []state.BackupDir{
+						if err := state.Backup(kubeconfigPath, getBackupObjectName(cr), cr.GetName(), []state.BackupDir{
 							{Key: "operator-keys", Directory: filepath.Join(cr.Spec.GetManifestsRoot(), ".operator/keys")},
 							{Key: "ejson-keys", Directory: filepath.Join(tmpDir, "ejson-keys")},
 						}); err != nil {
@@ -352,7 +353,7 @@ spec:
 			}
 
 			kubeconfigPath := filepath.Join(userHomeDir, ".kube", "config")
-			secretsClient, err := getSecretsClient(kubeconfigPath)
+			secretsClient, err := utils.GetSecretsClient(kubeconfigPath)
 			if err != nil {
 				t.Fatalf("unexpected error: %v\n", err)
 			}
@@ -413,19 +414,4 @@ func getDirMap(dir string) (map[string][]byte, error) {
 		return nil, err
 	}
 	return dirMap, nil
-}
-
-func getSecretsClient(kubeconfigPath string) (clientV1.SecretInterface, error) {
-	config, err := clientcmd.BuildConfigFromFlags("", kubeconfigPath)
-	if err != nil {
-		return nil, err
-	}
-
-	clientSet, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		return nil, err
-	}
-
-	secretsClient := clientSet.CoreV1().Secrets("default")
-	return secretsClient, nil
 }
