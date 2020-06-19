@@ -141,3 +141,37 @@ spec:
 		t.Fatalf("did not expect secret data to equal backed up data for key: %v in the secret\n", "operator-keys")
 	}
 }
+
+func Test_DeleteKeysClusterBackup_doesNotThrowErrorsIfSecretNotThere(t *testing.T) {
+	if os.Getenv("EXECUTE_K8S_TESTS") != "true" {
+		t.SkipNow()
+	}
+
+	cr := config.KApiCr{}
+	if err := yaml.Unmarshal([]byte(`
+apiVersion: qlik.com/v1
+kind: Qliksense
+metadata:
+  name: test-cr
+`), &cr); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	userHomeDir, err := os.UserHomeDir()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	kubeconfigPath := filepath.Join(userHomeDir, ".kube", "config")
+	if secretsClient, err := utils.GetSecretsClient(kubeconfigPath); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	} else if err := secretsClient.Delete("test-cr-operator-state-backup", &metav1.DeleteOptions{}); err != nil && !errors.IsNotFound(err) {
+		t.Fatalf("unexpected error: %v\n", err)
+	} else if err := DeleteKeysClusterBackup(&cr, kubeconfigPath); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	} else if _, err := secretsClient.Get("test-cr-operator-state-backup", metav1.GetOptions{}); err == nil {
+		t.Fatal("expected an error, but didn't get it")
+	} else if !errors.IsNotFound(err) {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
