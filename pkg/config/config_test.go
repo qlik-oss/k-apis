@@ -196,7 +196,6 @@ func TestGetFromSecrets(t *testing.T) {
 func TestGetAccessTokenOnly(t *testing.T) {
 	reader := setup(t)
 	cfg, _ := ReadCRSpecFromFile(reader)
-	//cfg.Spec.FetchSource.AccessToken = "something"
 	tok, _ := cfg.Spec.Git.GetAccessToken()
 	if tok != "12345" {
 		t.Fail()

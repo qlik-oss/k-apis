@@ -18,7 +18,6 @@ type CRSpec struct {
 	StorageClassName string                `json:"storageClassName,omitempty" yaml:"storageClassName,omitempty"`
 	Git              *Repo                 `json:"git,omitempty" yaml:"git,omitempty"`
 	OpsRunner        *OpsRunner            `json:"opsRunner,omitempty" yaml:"opsRunner,omitempty"`
-	FetchSource      *Repo                 `json:"fetchSource,omitempty" yaml:"fetchSource,omitempty"`
 	TlsCertHost      string                `json:"tlsCertHost,omitempty" yaml:"tlsCertHost,omitempty"`
 	TlsCertOrg       string                `json:"tlsCertOrg,omitempty" yaml:"tlsCertOrg,omitempty"`
 }
@@ -56,7 +55,7 @@ type SupperSecret struct {
 type NameValues []NameValue
 
 type NameValue struct {
-	Name      string     `yaml:"name" json:"name"`
+	Name      string     `yaml:"name,omitempty" json:"name,omitempty"`
 	Value     string     `yaml:"value,omitempty" json:"value,omitempty"`
 	ValueFrom *ValueFrom `yaml:"valueFrom,omitempty" json:"valueFrom,omitempty"`
 }
@@ -66,12 +65,12 @@ type ValueFrom struct {
 }
 
 type SecretKeyRef struct {
-	Name string `yaml:"name" json:"name"`
-	Key  string `yaml:"key" json:"key"`
+	Name string `yaml:"name,omitempty" json:"name,omitempty"`
+	Key  string `yaml:"key,omitempty" json:"key,omitempty"`
 }
 
 type Repo struct {
-	Repository  string `json:"repository"`
+	Repository  string `json:"repository,omitempty" yaml:"repository,omitempty"`
 	UserName    string `json:"userName,omitempty" yaml:"userName,omitempty"`
 	Password    string `json:"password,omitempty" yaml:"password,omitempty"`
 	AccessToken string `json:"accessToken,omitempty" yaml:"accessToken,omitempty"`
