@@ -34,6 +34,7 @@ func finalizeKeys(cr *config.KApiCr, keysAction config.KeysAction, kubeConfigPat
 				return fmt.Errorf("error restoring keys from the cluster: %w", err)
 			}
 		} else {
+			log.Println("restored application keys from the cluster")
 			keysFound = true
 		}
 	}
@@ -42,13 +43,14 @@ func finalizeKeys(cr *config.KApiCr, keysAction config.KeysAction, kubeConfigPat
 		if err := qust.GenerateKeys(cr.Spec, ejsonPublicKey); err != nil {
 			return fmt.Errorf("error generating application keys: %w", err)
 		} else {
-			log.Println("backing up keys to the cluster")
+			log.Println("generated application keys")
 			if err := state.Backup(kubeConfigPath, getBackupObjectName(cr), cr.GetName(), []state.BackupDir{
 				{Key: "operator-keys", Directory: filepath.Join(cr.Spec.GetManifestsRoot(), ".operator/keys")},
 				{Key: "ejson-keys", Directory: getEjsonKeyDir(defaultEjsonKeydir)},
 			}); err != nil {
 				return fmt.Errorf("error backing up keys to the cluster: %w", err)
 			}
+			log.Println("backed up application keys to the cluster")
 		}
 	}
 
@@ -115,6 +117,7 @@ func processEjsonKeys(cr *config.KApiCr, keysAction config.KeysAction, kubeConfi
 				return "", "", err
 			}
 		} else {
+			log.Println("restored ejson keys from the cluster")
 			keysFound = true
 		}
 	}
