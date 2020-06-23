@@ -44,7 +44,7 @@ func finalizeKeys(cr *config.KApiCr, keysAction config.KeysAction, kubeConfigPat
 			return fmt.Errorf("error generating application keys: %w", err)
 		} else {
 			log.Println("generated application keys")
-			if err := state.Backup(kubeConfigPath, getBackupObjectName(cr), cr.GetName(), []state.BackupDir{
+			if err := state.Backup(kubeConfigPath, getBackupObjectName(cr), cr.GetName(), cr.GetObjectMeta().GetNamespace(), []state.BackupDir{
 				{Key: "operator-keys", Directory: filepath.Join(cr.Spec.GetManifestsRoot(), ".operator/keys")},
 				{Key: "ejson-keys", Directory: getEjsonKeyDir(defaultEjsonKeydir)},
 			}); err != nil {
@@ -210,7 +210,7 @@ func loadEjsonKeysFromKeyDir(defaultKeyDir string) (ejsonPublicKey, ejsonPrivate
 }
 
 func DeleteKeysClusterBackup(cr *config.KApiCr, kubeConfigPath string) error {
-	if secretsClient, err := utils.GetSecretsClient(kubeConfigPath); err != nil {
+	if secretsClient, err := utils.GetSecretsClient(kubeConfigPath, cr.GetObjectMeta().GetNamespace()); err != nil {
 		return err
 	} else if err := secretsClient.Delete(getBackupObjectName(cr), &metaV1.DeleteOptions{}); err != nil && !errors.IsNotFound(err) {
 		return err

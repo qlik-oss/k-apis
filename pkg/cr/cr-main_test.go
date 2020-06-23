@@ -150,7 +150,7 @@ func TestGeneratePatches_KeysAction(t *testing.T) {
 					} else if err := qust.GenerateKeys(cr.Spec, ejsonPublicKey); err != nil {
 						t.Fatalf("unexpected error: %v\n", err)
 					} else {
-						if err := state.Backup(kubeconfigPath, getBackupObjectName(cr), cr.GetName(), []state.BackupDir{
+						if err := state.Backup(kubeconfigPath, getBackupObjectName(cr), cr.GetName(), cr.GetObjectMeta().GetNamespace(), []state.BackupDir{
 							{Key: "operator-keys", Directory: filepath.Join(cr.Spec.GetManifestsRoot(), ".operator/keys")},
 							{Key: "ejson-keys", Directory: filepath.Join(tmpDir, "ejson-keys")},
 						}); err != nil {
@@ -256,7 +256,7 @@ func TestGeneratePatches_KeysAction(t *testing.T) {
 					} else if err := qust.GenerateKeys(cr.Spec, ejsonPublicKey); err != nil {
 						t.Fatalf("unexpected error: %v\n", err)
 					} else {
-						if err := state.Backup(kubeconfigPath, getBackupObjectName(cr), cr.GetName(), []state.BackupDir{
+						if err := state.Backup(kubeconfigPath, getBackupObjectName(cr), cr.GetName(), cr.GetObjectMeta().GetNamespace(), []state.BackupDir{
 							{Key: "operator-keys", Directory: filepath.Join(cr.Spec.GetManifestsRoot(), ".operator/keys")},
 							{Key: "ejson-keys", Directory: filepath.Join(tmpDir, "ejson-keys")},
 						}); err != nil {
@@ -353,7 +353,7 @@ spec:
 			}
 
 			kubeconfigPath := filepath.Join(userHomeDir, ".kube", "config")
-			secretsClient, err := utils.GetSecretsClient(kubeconfigPath)
+			secretsClient, err := utils.GetSecretsClient(kubeconfigPath, cr.GetObjectMeta().GetNamespace())
 			if err != nil {
 				t.Fatalf("unexpected error: %v\n", err)
 			}

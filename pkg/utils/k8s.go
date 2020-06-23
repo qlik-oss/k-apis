@@ -11,19 +11,20 @@ import (
 
 const defaultNamespace = "default"
 
-func GetSecretsClient(kubeConfigPath string) (clientV1.SecretInterface, error) {
+func GetSecretsClient(kubeConfigPath, inClusterConfigNamespace string) (clientV1.SecretInterface, error) {
 	if config, err := clientcmd.BuildConfigFromFlags("", kubeConfigPath); err != nil {
 		return nil, err
 	} else if clientSet, err := kubernetes.NewForConfig(config); err != nil {
 		return nil, err
-	} else if namespace, err := getNamespace(kubeConfigPath); err != nil {
+	} else if namespace, err := getNamespace(kubeConfigPath, inClusterConfigNamespace); err != nil {
 		return nil, err
 	} else {
 		return clientSet.CoreV1().Secrets(namespace), nil
 	}
 }
 
-func getNamespace(kubeconfigPath string) (string, error) {
+func getNamespace(kubeconfigPath, inClusterConfigNamespace string) (string, error) {
+	namespace := ""
 	if kubeconfigPath != "" {
 		if kubeConfigContents, err := ioutil.ReadFile(kubeconfigPath); err != nil {
 			return "", err
@@ -32,12 +33,13 @@ func getNamespace(kubeconfigPath string) (string, error) {
 		} else if currentContextInfo, ok := apiConfig.Contexts[apiConfig.CurrentContext]; !ok {
 			return "", fmt.Errorf("cannot extract context info for current context: %v", apiConfig.CurrentContext)
 		} else {
-			namespace := currentContextInfo.Namespace
-			if namespace == "" {
-				namespace = defaultNamespace
-			}
-			return namespace, nil
+			namespace = currentContextInfo.Namespace
 		}
+	} else {
+		namespace = inClusterConfigNamespace
 	}
-	return "", nil
+	if namespace == "" {
+		namespace = defaultNamespace
+	}
+	return namespace, nil
 }

@@ -38,7 +38,7 @@ metadata:
 	}
 
 	kubeconfigPath := filepath.Join(userHomeDir, ".kube", "config")
-	if secretsClient, err := utils.GetSecretsClient(kubeconfigPath); err != nil {
+	if secretsClient, err := utils.GetSecretsClient(kubeconfigPath, cr.GetObjectMeta().GetNamespace()); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	} else if err := secretsClient.Delete("test-cr-operator-state-backup", &metav1.DeleteOptions{}); err != nil && !errors.IsNotFound(err) {
 		t.Fatalf("unexpected error: %v\n", err)
@@ -107,7 +107,7 @@ spec:
 	}
 
 	kubeconfigPath := filepath.Join(userHomeDir, ".kube", "config")
-	secretsClient, err := utils.GetSecretsClient(kubeconfigPath)
+	secretsClient, err := utils.GetSecretsClient(kubeconfigPath, cr.GetObjectMeta().GetNamespace())
 	if err != nil {
 		t.Fatalf("unexpected error: %v\n", err)
 	}
@@ -163,7 +163,7 @@ metadata:
 	}
 
 	kubeconfigPath := filepath.Join(userHomeDir, ".kube", "config")
-	if secretsClient, err := utils.GetSecretsClient(kubeconfigPath); err != nil {
+	if secretsClient, err := utils.GetSecretsClient(kubeconfigPath, cr.GetObjectMeta().GetNamespace()); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	} else if err := secretsClient.Delete("test-cr-operator-state-backup", &metav1.DeleteOptions{}); err != nil && !errors.IsNotFound(err) {
 		t.Fatalf("unexpected error: %v\n", err)

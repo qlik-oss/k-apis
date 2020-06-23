@@ -26,11 +26,11 @@ const (
 	defaultReleaseLabelValue = "qliksense"
 )
 
-func Backup(kubeconfigPath, secretName, releaseLabelValue string, backupDirs []BackupDir) error {
+func Backup(kubeconfigPath, secretName, namespace, releaseLabelValue string, backupDirs []BackupDir) error {
 	if releaseLabelValue == "" {
 		releaseLabelValue = defaultReleaseLabelValue
 	}
-	secretsClient, err := utils.GetSecretsClient(kubeconfigPath)
+	secretsClient, err := utils.GetSecretsClient(kubeconfigPath, namespace)
 	if err != nil {
 		return err
 	}
@@ -58,8 +58,8 @@ func Backup(kubeconfigPath, secretName, releaseLabelValue string, backupDirs []B
 	return err
 }
 
-func Restore(kubeconfigPath, secretName, namespaceName string, backupInfos []BackupDir) error {
-	secretsClient, err := utils.GetSecretsClient(kubeconfigPath)
+func Restore(kubeconfigPath, secretName, namespace string, backupInfos []BackupDir) error {
+	secretsClient, err := utils.GetSecretsClient(kubeconfigPath, namespace)
 	if err != nil {
 		return err
 	}
