@@ -100,8 +100,8 @@ func createSupperSecretSelectivePatch(sec map[string]config.NameValues) (map[str
 // create a patch section to be added to the selective patch
 func getSecretPatchBody(svc string, nv config.NameValue) types.Patch {
 	ph := getSuperSecretTemplate(svc)
-	ph.StringData = map[string]string{
-		nv.Name: fmt.Sprintf(`((- "\n"))(( index (ds "data") "%s" | base64.Decode | indent 8 ))`, nv.Name) + "\n",
+	ph.Data = map[string]string{
+		nv.Name: fmt.Sprintf(`(( index (ds "data") "%s" ))`, nv.Name),
 	}
 	phb, _ := yaml.Marshal(ph)
 	p1 := types.Patch{

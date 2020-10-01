@@ -43,8 +43,8 @@ func TestCreateSupperSecretSelectivePatch(t *testing.T) {
 		Metadata: map[string]string{
 			"name": "qliksense-secrets",
 		},
-		StringData: map[string]string{
-			"mongodbUri": `((- "\n"))(( index (ds "data") "mongodbUri" | base64.Decode | indent 8 ))`,
+		Data: map[string]string{
+			"mongodbUri": `(( index (ds "data") "mongodbUri" ))`,
 		},
 	}
 	ss2 := &config.SupperSecret{}
