@@ -84,8 +84,8 @@ func TestProcessCrSecrets(t *testing.T) {
 
 	sp := getSuperSecretSPTemplate("qliksense")
 	scm := getSuperSecretTemplate("qliksense")
-	scm.StringData = map[string]string{
-		"mongodbUri": `((- "\n"))(( index (ds "data") "mongodbUri" | base64.Decode | indent 8 ))` + "\n",
+	scm.Data = map[string]string{
+		"mongodbUri": `(( index (ds "data") "mongodbUri" ))`,
 	}
 	phb, _ := yaml.Marshal(scm)
 	sp.Patches = []types.Patch{
