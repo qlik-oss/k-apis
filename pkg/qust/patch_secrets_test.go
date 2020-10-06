@@ -43,8 +43,8 @@ func TestCreateSupperSecretSelectivePatch(t *testing.T) {
 		Metadata: map[string]string{
 			"name": "qliksense-secrets",
 		},
-		StringData: map[string]string{
-			"mongodbUri": `((- "\n"))(( index (ds "data") "mongodbUri" | base64.Decode | indent 8 ))`,
+		Data: map[string]string{
+			"mongodbUri": `(( index (ds "data") "mongodbUri" ))`,
 		},
 	}
 	ss2 := &config.SupperSecret{}
@@ -84,8 +84,8 @@ func TestProcessCrSecrets(t *testing.T) {
 
 	sp := getSuperSecretSPTemplate("qliksense")
 	scm := getSuperSecretTemplate("qliksense")
-	scm.StringData = map[string]string{
-		"mongodbUri": `((- "\n"))(( index (ds "data") "mongodbUri" | base64.Decode | indent 8 ))` + "\n",
+	scm.Data = map[string]string{
+		"mongodbUri": `(( index (ds "data") "mongodbUri" ))`,
 	}
 	phb, _ := yaml.Marshal(scm)
 	sp.Patches = []types.Patch{
