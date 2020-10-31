@@ -44,7 +44,7 @@ func finalizeKeys(cr *config.KApiCr, keysAction config.KeysAction, kubeConfigPat
 			return fmt.Errorf("error generating application keys: %w", err)
 		} else {
 			log.Println("generated application keys")
-			if err := state.Backup(kubeConfigPath, getBackupObjectName(cr), cr.GetName(), cr.GetObjectMeta().GetNamespace(), []state.BackupDir{
+			if err := state.Backup(kubeConfigPath, getBackupObjectName(cr), cr.GetObjectMeta().GetNamespace(), cr.GetName(), []state.BackupDir{
 				{Key: "operator-keys", Directory: filepath.Join(cr.Spec.GetManifestsRoot(), ".operator/keys")},
 				{Key: "ejson-keys", Directory: getEjsonKeyDir(defaultEjsonKeydir)},
 			}); err != nil {
