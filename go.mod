@@ -5,7 +5,7 @@ go 1.13
 replace (
 	k8s.io/apimachinery => k8s.io/apimachinery v0.17.0
 	k8s.io/client-go => k8s.io/client-go v0.17.0
-	sigs.k8s.io/kustomize/api => github.com/qlik-oss/kustomize/api v0.3.3-0.20200604192606-17370c1af57b
+	sigs.k8s.io/kustomize/api => github.com/qlik-oss/kustomize/api v0.6.3-0.20210501124501-cee22da5c014
 )
 
 require (
@@ -21,7 +21,7 @@ require (
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/stretchr/testify v1.4.0
 	gopkg.in/square/go-jose.v2 v2.4.0
-	gopkg.in/yaml.v2 v2.2.8
+	gopkg.in/yaml.v2 v2.3.0
 	k8s.io/api v0.17.2
 	k8s.io/apimachinery v0.17.2
 	k8s.io/client-go v11.0.0+incompatible
