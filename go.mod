@@ -3,9 +3,8 @@ module github.com/qlik-oss/k-apis
 go 1.13
 
 replace (
-	k8s.io/apimachinery => k8s.io/apimachinery v0.17.0
-	k8s.io/client-go => k8s.io/client-go v0.17.0
-	sigs.k8s.io/kustomize/api => github.com/qlik-oss/kustomize/api v0.6.3-0.20210501124501-cee22da5c014
+	k8s.io/client-go => k8s.io/client-go v0.17.4
+	sigs.k8s.io/kustomize/api => github.com/qlik-oss/kustomize/api v0.6.3-0.20210505000145-531e4d72ac51
 )
 
 require (
@@ -22,8 +21,8 @@ require (
 	github.com/stretchr/testify v1.4.0
 	gopkg.in/square/go-jose.v2 v2.4.0
 	gopkg.in/yaml.v2 v2.3.0
-	k8s.io/api v0.17.2
-	k8s.io/apimachinery v0.17.2
+	k8s.io/api v0.17.4
+	k8s.io/apimachinery v0.17.4
 	k8s.io/client-go v11.0.0+incompatible
 	sigs.k8s.io/kustomize/api v0.0.0-00010101000000-000000000000
 )
