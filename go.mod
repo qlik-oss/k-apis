@@ -1,10 +1,10 @@
 module github.com/qlik-oss/k-apis
 
-go 1.13
+go 1.14
 
 replace (
 	k8s.io/client-go => k8s.io/client-go v0.17.4
-	sigs.k8s.io/kustomize/api => github.com/qlik-oss/kustomize/api v0.6.3-0.20210506004514-6f80cd334c08
+	sigs.k8s.io/kustomize/api => github.com/qlik-oss/kustomize/api v0.6.3-0.20210506011547-022708053e63
 )
 
 require (
