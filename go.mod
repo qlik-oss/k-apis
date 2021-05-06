@@ -4,7 +4,7 @@ go 1.13
 
 replace (
 	k8s.io/client-go => k8s.io/client-go v0.17.4
-	sigs.k8s.io/kustomize/api => github.com/qlik-oss/kustomize/api v0.6.3-0.20210505000145-531e4d72ac51
+	sigs.k8s.io/kustomize/api => github.com/qlik-oss/kustomize/api v0.6.3-0.20210506004514-6f80cd334c08
 )
 
 require (
