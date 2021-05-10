@@ -1,6 +1,7 @@
 package cr
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -212,7 +213,7 @@ func loadEjsonKeysFromKeyDir(defaultKeyDir string) (ejsonPublicKey, ejsonPrivate
 func DeleteKeysClusterBackup(cr *config.KApiCr, kubeConfigPath string) error {
 	if secretsClient, err := utils.GetSecretsClient(kubeConfigPath, cr.GetObjectMeta().GetNamespace()); err != nil {
 		return err
-	} else if err := secretsClient.Delete(getBackupObjectName(cr), &metaV1.DeleteOptions{}); err != nil && !errors.IsNotFound(err) {
+	} else if err := secretsClient.Delete(context.TODO(), getBackupObjectName(cr), metaV1.DeleteOptions{}); err != nil && !errors.IsNotFound(err) {
 		return err
 	}
 	return nil

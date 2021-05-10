@@ -1,6 +1,7 @@
 package state
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -40,20 +41,20 @@ func Backup(kubeconfigPath, secretName, namespace, releaseLabelValue string, bac
 		return err
 	}
 
-	secret, err := secretsClient.Get(secretName, metaV1.GetOptions{})
+	secret, err := secretsClient.Get(context.TODO(), secretName, metaV1.GetOptions{})
 	if err != nil && kubeApiErrors.IsNotFound(err) {
 		//doesn't exist, create:
-		_, err = secretsClient.Create(&v1.Secret{
+		_, err = secretsClient.Create(context.TODO(), &v1.Secret{
 			ObjectMeta: metaV1.ObjectMeta{
 				Name:   secretName,
 				Labels: map[string]string{releaseLabelKey: releaseLabelValue},
 			},
 			Data: binaryData,
-		})
+		}, metaV1.CreateOptions{})
 	} else if err == nil {
 		//exists, update:
 		secret.Data = binaryData
-		_, err = secretsClient.Update(secret)
+		_, err = secretsClient.Update(context.TODO(), secret, metaV1.UpdateOptions{})
 	}
 	return err
 }
@@ -64,7 +65,7 @@ func Restore(kubeconfigPath, secretName, namespace string, backupInfos []BackupD
 		return err
 	}
 
-	secret, err := secretsClient.Get(secretName, metaV1.GetOptions{})
+	secret, err := secretsClient.Get(context.TODO(), secretName, metaV1.GetOptions{})
 	if err != nil {
 		return err
 	}
