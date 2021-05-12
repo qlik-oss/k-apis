@@ -24,7 +24,7 @@ require (
 	k8s.io/api v0.20.4
 	k8s.io/apimachinery v0.20.4
 	k8s.io/client-go v11.0.0+incompatible
-	sigs.k8s.io/kustomize/api v0.0.0-00010101000000-000000000000
+	sigs.k8s.io/kustomize/api v0.6.2
 	sigs.k8s.io/kustomize/kyaml v0.10.19
 )
 
