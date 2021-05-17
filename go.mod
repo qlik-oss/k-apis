@@ -7,7 +7,10 @@ replace (
 	github.com/docker/docker => github.com/moby/moby v17.12.0-ce-rc1.0.20200618181300-9dc6525e6118+incompatible
 	k8s.io/api => k8s.io/api v0.20.4
 	k8s.io/client-go => k8s.io/client-go v0.20.4
+	k8s.io/kube-openapi/compat => github.com/qlik-oss/kustomize/compat/k8s.io/kube-openapi v0.0.0-20210512201104-abaa1af83bed
 	sigs.k8s.io/kustomize/api => github.com/qlik-oss/kustomize/api v0.6.4-0.20210512201104-abaa1af83bed
+	sigs.k8s.io/kustomize/kyaml => github.com/qlik-oss/kustomize/kyaml v0.9.3-0.20210512201104-abaa1af83bed
+
 )
 
 require (
@@ -26,6 +29,7 @@ require (
 	k8s.io/client-go v11.0.0+incompatible
 	sigs.k8s.io/kustomize/api v0.0.0-00010101000000-000000000000
 	sigs.k8s.io/kustomize/kyaml v0.10.19
+
 )
 
 exclude github.com/Azure/go-autorest v12.0.0+incompatible
