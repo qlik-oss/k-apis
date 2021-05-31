@@ -2,6 +2,7 @@ package cr
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -40,9 +41,9 @@ metadata:
 	kubeconfigPath := filepath.Join(userHomeDir, ".kube", "config")
 	if secretsClient, err := utils.GetSecretsClient(kubeconfigPath, cr.GetObjectMeta().GetNamespace()); err != nil {
 		t.Fatalf("unexpected error: %v", err)
-	} else if err := secretsClient.Delete("test-cr-operator-state-backup", &metav1.DeleteOptions{}); err != nil && !errors.IsNotFound(err) {
+	} else if err := secretsClient.Delete(context.TODO(), "test-cr-operator-state-backup", metav1.DeleteOptions{}); err != nil && !errors.IsNotFound(err) {
 		t.Fatalf("unexpected error: %v\n", err)
-	} else if _, err := secretsClient.Create(&v1.Secret{
+	} else if _, err := secretsClient.Create(context.TODO(), &v1.Secret{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "v1",
 			Kind:       "Secret",
@@ -52,13 +53,13 @@ metadata:
 		},
 		Type: v1.SecretTypeOpaque,
 		Data: map[string][]byte{"foo": []byte("bar")},
-	}); err != nil {
+	}, metav1.CreateOptions{}); err != nil {
 		t.Fatalf("unexpected error: %v", err)
-	} else if _, err := secretsClient.Get("test-cr-operator-state-backup", metav1.GetOptions{}); err != nil {
+	} else if _, err := secretsClient.Get(context.TODO(), "test-cr-operator-state-backup", metav1.GetOptions{}); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	} else if err := DeleteKeysClusterBackup(&cr, kubeconfigPath); err != nil {
 		t.Fatalf("unexpected error: %v", err)
-	} else if _, err := secretsClient.Get("test-cr-operator-state-backup", metav1.GetOptions{}); err == nil {
+	} else if _, err := secretsClient.Get(context.TODO(), "test-cr-operator-state-backup", metav1.GetOptions{}); err == nil {
 		t.Fatal("expected an error, but didn't get it")
 	} else if !errors.IsNotFound(err) {
 		t.Fatalf("unexpected error: %v", err)
@@ -115,7 +116,7 @@ spec:
 	var backedUpEjsonKeys, backedUpApplicationKeys []byte
 	var found bool
 	GeneratePatches(&cr, config.KeysActionRestoreOrRotate, kubeconfigPath)
-	if secret, err := secretsClient.Get("test-cr-operator-state-backup", metav1.GetOptions{}); err != nil {
+	if secret, err := secretsClient.Get(context.TODO(), "test-cr-operator-state-backup", metav1.GetOptions{}); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	} else if backedUpEjsonKeys, found = secret.Data["ejson-keys"]; !found {
 		t.Fatalf("expected key: %v to be present in the secret\n", "ejson-keys")
@@ -129,7 +130,7 @@ spec:
 		GeneratePatches(&cr, config.KeysActionRestoreOrRotate, kubeconfigPath)
 	}
 
-	if secret, err := secretsClient.Get("test-cr-operator-state-backup", metav1.GetOptions{}); err != nil {
+	if secret, err := secretsClient.Get(context.TODO(), "test-cr-operator-state-backup", metav1.GetOptions{}); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	} else if newEjsonKeys, found := secret.Data["ejson-keys"]; !found {
 		t.Fatalf("expected key: %v to be present in the secret\n", "ejson-keys")
@@ -165,11 +166,11 @@ metadata:
 	kubeconfigPath := filepath.Join(userHomeDir, ".kube", "config")
 	if secretsClient, err := utils.GetSecretsClient(kubeconfigPath, cr.GetObjectMeta().GetNamespace()); err != nil {
 		t.Fatalf("unexpected error: %v", err)
-	} else if err := secretsClient.Delete("test-cr-operator-state-backup", &metav1.DeleteOptions{}); err != nil && !errors.IsNotFound(err) {
+	} else if err := secretsClient.Delete(context.TODO(), "test-cr-operator-state-backup", metav1.DeleteOptions{}); err != nil && !errors.IsNotFound(err) {
 		t.Fatalf("unexpected error: %v\n", err)
 	} else if err := DeleteKeysClusterBackup(&cr, kubeconfigPath); err != nil {
 		t.Fatalf("unexpected error: %v", err)
-	} else if _, err := secretsClient.Get("test-cr-operator-state-backup", metav1.GetOptions{}); err == nil {
+	} else if _, err := secretsClient.Get(context.TODO(), "test-cr-operator-state-backup", metav1.GetOptions{}); err == nil {
 		t.Fatal("expected an error, but didn't get it")
 	} else if !errors.IsNotFound(err) {
 		t.Fatalf("unexpected error: %v", err)

@@ -2,6 +2,7 @@ package cr
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -111,12 +112,12 @@ func TestGeneratePatches_KeysAction(t *testing.T) {
 			name:       "KeysActionForceRotate",
 			keysAction: config.KeysActionForceRotate,
 			setup: func(t *testing.T, secretsClient clientV1.SecretInterface, tmpDir string, cr *config.KApiCr) {
-				if err := secretsClient.Delete("test-cr-operator-state-backup", &metaV1.DeleteOptions{}); err != nil && !errors.IsNotFound(err) {
+				if err := secretsClient.Delete(context.TODO(), "test-cr-operator-state-backup", metaV1.DeleteOptions{}); err != nil && !errors.IsNotFound(err) {
 					t.Fatalf("unexpected error: %v\n", err)
 				}
 			},
 			checkAssertions: func(t *testing.T, secretsClient clientV1.SecretInterface, tmpDir string, cr *config.KApiCr) {
-				secret, err := secretsClient.Get("test-cr-operator-state-backup", metaV1.GetOptions{})
+				secret, err := secretsClient.Get(context.TODO(), "test-cr-operator-state-backup", metaV1.GetOptions{})
 				if err != nil {
 					t.Fatalf("unexpected error: %v\n", err)
 				}
@@ -169,7 +170,7 @@ func TestGeneratePatches_KeysAction(t *testing.T) {
 						t.Fatalf("unexpected error: %v\n", err)
 					}
 
-					secret, err := secretsClient.Get("test-cr-operator-state-backup", metaV1.GetOptions{})
+					secret, err := secretsClient.Get(context.TODO(), "test-cr-operator-state-backup", metaV1.GetOptions{})
 					if err != nil {
 						t.Fatalf("unexpected error: %v\n", err)
 					}
@@ -182,7 +183,7 @@ func TestGeneratePatches_KeysAction(t *testing.T) {
 					}
 				},
 				checkAssertions: func(t *testing.T, secretsClient clientV1.SecretInterface, tmpDir string, cr *config.KApiCr) {
-					secret, err := secretsClient.Get("test-cr-operator-state-backup", metaV1.GetOptions{})
+					secret, err := secretsClient.Get(context.TODO(), "test-cr-operator-state-backup", metaV1.GetOptions{})
 					if err != nil {
 						t.Fatalf("unexpected error: %v\n", err)
 					}
@@ -217,12 +218,12 @@ func TestGeneratePatches_KeysAction(t *testing.T) {
 			name:       "KeysActionRestoreOrRotate-can-behave-like-KeysActionForceRotate",
 			keysAction: config.KeysActionRestoreOrRotate,
 			setup: func(t *testing.T, secretsClient clientV1.SecretInterface, tmpDir string, cr *config.KApiCr) {
-				if err := secretsClient.Delete("test-cr-operator-state-backup", &metaV1.DeleteOptions{}); err != nil && !errors.IsNotFound(err) {
+				if err := secretsClient.Delete(context.TODO(), "test-cr-operator-state-backup", metaV1.DeleteOptions{}); err != nil && !errors.IsNotFound(err) {
 					t.Fatalf("unexpected error: %v\n", err)
 				}
 			},
 			checkAssertions: func(t *testing.T, secretsClient clientV1.SecretInterface, tmpDir string, cr *config.KApiCr) {
-				secret, err := secretsClient.Get("test-cr-operator-state-backup", metaV1.GetOptions{})
+				secret, err := secretsClient.Get(context.TODO(), "test-cr-operator-state-backup", metaV1.GetOptions{})
 				if err != nil {
 					t.Fatalf("unexpected error: %v\n", err)
 				}
@@ -275,7 +276,7 @@ func TestGeneratePatches_KeysAction(t *testing.T) {
 						t.Fatalf("unexpected error: %v\n", err)
 					}
 
-					secret, err := secretsClient.Get("test-cr-operator-state-backup", metaV1.GetOptions{})
+					secret, err := secretsClient.Get(context.TODO(), "test-cr-operator-state-backup", metaV1.GetOptions{})
 					if err != nil {
 						t.Fatalf("unexpected error: %v\n", err)
 					}
@@ -288,7 +289,7 @@ func TestGeneratePatches_KeysAction(t *testing.T) {
 					}
 				},
 				checkAssertions: func(t *testing.T, secretsClient clientV1.SecretInterface, tmpDir string, cr *config.KApiCr) {
-					secret, err := secretsClient.Get("test-cr-operator-state-backup", metaV1.GetOptions{})
+					secret, err := secretsClient.Get(context.TODO(), "test-cr-operator-state-backup", metaV1.GetOptions{})
 					if err != nil {
 						t.Fatalf("unexpected error: %v\n", err)
 					}

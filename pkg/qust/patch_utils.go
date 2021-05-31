@@ -8,8 +8,8 @@ import (
 	"github.com/qlik-oss/k-apis/pkg/config"
 	"gopkg.in/yaml.v2"
 
-	"sigs.k8s.io/kustomize/api/resid"
 	"sigs.k8s.io/kustomize/api/types"
+	"sigs.k8s.io/kustomize/kyaml/resid"
 )
 
 const (
@@ -90,13 +90,18 @@ func isResourcesInKust(rsFileName string, kust *types.Kustomization) bool {
 func getSelector(kind, svc string) *types.Selector {
 	if svc == "" {
 		return &types.Selector{
-			Gvk: resid.Gvk{
-				Kind: kind,
-			}}
+			ResId: resid.ResId{
+				Gvk: resid.Gvk{
+					Kind: kind,
+				},
+			},
+		}
 	}
 	return &types.Selector{
-		Gvk: resid.Gvk{
-			Kind: kind,
+		ResId: resid.ResId{
+			Gvk: resid.Gvk{
+				Kind: kind,
+			},
 		},
 		LabelSelector: "app=" + svc,
 	}

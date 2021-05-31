@@ -9,8 +9,8 @@ import (
 
 	"github.com/qlik-oss/k-apis/pkg/config"
 	"gopkg.in/yaml.v2"
-	"sigs.k8s.io/kustomize/api/resid"
 	"sigs.k8s.io/kustomize/api/types"
+	"sigs.k8s.io/kustomize/kyaml/resid"
 )
 
 func ProcessTransfomer(cr *config.CRSpec) error {
@@ -81,8 +81,10 @@ func createSelectivePatchObjectForTransformer(transformerName, appName string) (
 		Patch: string(phb),
 	}
 	p1.Target = &types.Selector{
-		Gvk: resid.Gvk{
-			Kind: "SelectivePatch",
+		ResId: resid.ResId{
+			Gvk: resid.Gvk{
+				Kind: "SelectivePatch",
+			},
 		},
 		LabelSelector: "app=" + appName + ",key=" + transformerName,
 	}
