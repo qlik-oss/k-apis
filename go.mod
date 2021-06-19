@@ -7,7 +7,7 @@ replace (
 	github.com/docker/docker => github.com/moby/moby v17.12.0-ce-rc1.0.20200618181300-9dc6525e6118+incompatible
 	k8s.io/api => k8s.io/api v0.20.4
 	k8s.io/client-go => k8s.io/client-go v0.20.4
-	sigs.k8s.io/kustomize/api => github.com/qlik-oss/kustomize/api v0.6.4-0.20210615132330-a3c617cd50e6
+	sigs.k8s.io/kustomize/api => github.com/qlik-oss/kustomize/api v0.6.4-0.20210619105914-05a4fe326169
 )
 
 require (
