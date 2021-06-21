@@ -2,11 +2,11 @@ package qust
 
 import (
 	"bytes"
+	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"math/rand"
 	"os"
 	"path/filepath"
 	"time"
@@ -92,6 +92,18 @@ func overrideServiceEpriviteKeyJsonFile(cr *config.CRSpec, service *serviceT, ej
 			} else {
 				ePriviteKeyMap["cookies_keys"] = base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf(`["%v"]`, base64.StdEncoding.EncodeToString(loginStateKey))))
 			}
+
+			_, accessTokenPrivateKey, err := keys.GeneratePrivateKeyAndPem()
+			if err != nil {
+				return err
+			}
+			ePriviteKeyMap["accessTokenPrivateKey"] = base64.StdEncoding.EncodeToString([]byte(accessTokenPrivateKey))
+
+			_, accessTokenRefreshPrivateKey, err := keys.GeneratePrivateKeyAndPem()
+			if err != nil {
+				return err
+			}
+			ePriviteKeyMap["refreshTokenPrivateKey"] = base64.StdEncoding.EncodeToString([]byte(accessTokenRefreshPrivateKey))
 		}
 	}
 
