@@ -93,17 +93,17 @@ func overrideServiceEpriviteKeyJsonFile(cr *config.CRSpec, service *serviceT, ej
 				ePriviteKeyMap["cookies_keys"] = base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf(`["%v"]`, base64.StdEncoding.EncodeToString(loginStateKey))))
 			}
 
-			_, accessTokenPrivateKey, err := keys.GeneratePrivateKeyAndPem()
-			if err != nil {
+			if _, accessTokenPrivateKey, err := keys.GeneratePrivateKeyAndPem(); err != nil {
 				return err
+			} else {
+				ePriviteKeyMap["accessTokenPrivateKey"] = base64.StdEncoding.EncodeToString([]byte(accessTokenPrivateKey))
 			}
-			ePriviteKeyMap["accessTokenPrivateKey"] = base64.StdEncoding.EncodeToString([]byte(accessTokenPrivateKey))
 
-			_, accessTokenRefreshPrivateKey, err := keys.GeneratePrivateKeyAndPem()
-			if err != nil {
+			if _, accessTokenRefreshPrivateKey, err := keys.GeneratePrivateKeyAndPem(); err != nil {
 				return err
+			} else {
+				ePriviteKeyMap["refreshTokenPrivateKey"] = base64.StdEncoding.EncodeToString([]byte(accessTokenRefreshPrivateKey))
 			}
-			ePriviteKeyMap["refreshTokenPrivateKey"] = base64.StdEncoding.EncodeToString([]byte(accessTokenRefreshPrivateKey))
 		}
 	}
 
