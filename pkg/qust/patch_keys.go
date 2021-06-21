@@ -97,14 +97,14 @@ func overrideServiceEpriviteKeyJsonFile(cr *config.CRSpec, service *serviceT, ej
 			if _, accessTokenPrivateKey, err := keys.GeneratePrivateKeyAndPem(); err != nil {
 				return err
 			} else {
-				ePriviteKeyMap["access_private_key"] = base64.StdEncoding.EncodeToString([]byte(accessTokenPrivateKey))
+				ePriviteKeyMap["access_private_key"] = accessTokenPrivateKey
 
 			}
 
 			if _, accessTokenRefreshPrivateKey, err := keys.GeneratePrivateKeyAndPem(); err != nil {
 				return err
 			} else {
-				ePriviteKeyMap["refresh_private_key"] = base64.StdEncoding.EncodeToString([]byte(accessTokenRefreshPrivateKey))
+				ePriviteKeyMap["refresh_private_key"] = accessTokenRefreshPrivateKey
 			}
 		}
 	}
