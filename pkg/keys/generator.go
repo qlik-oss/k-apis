@@ -36,6 +36,19 @@ func getPrivateKeyPem(privateKey *ecdsa.PrivateKey) (string, error) {
 	return string(pem.EncodeToMemory(&pem.Block{Type: "EC PRIVATE KEY", Bytes: ecPrivateKeyX509Encoded})), nil
 }
 
+func GeneratePrivateKeyAndPem() (privateKey *ecdsa.PrivateKey, privateKeyPem string, err error) {
+	privateKey, err = ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
+	if err != nil {
+		return nil, "", err
+	}
+
+	privateKeyPem, err = getPrivateKeyPem(privateKey)
+	if err != nil {
+		return nil, "", err
+	}
+	return privateKey, privateKeyPem, nil
+}
+
 func getKeyId(privateKey *ecdsa.PrivateKey) (string, error) {
 	publicJSONWebKey := jose.JSONWebKey{
 		Key: privateKey.Public(),
@@ -95,12 +108,7 @@ func getJwks(publicKey *ecdsa.PublicKey, keyId string) (string, error) {
 }
 
 func Generate() (privateKeyPem string, keyId string, jwks string, err error) {
-	privateKey, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
-	if err != nil {
-		return "", "", "", err
-	}
-
-	privateKeyPem, err = getPrivateKeyPem(privateKey)
+	privateKey, privateKeyPem, err := GeneratePrivateKeyAndPem()
 	if err != nil {
 		return "", "", "", err
 	}
