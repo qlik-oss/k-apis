@@ -80,7 +80,6 @@ func overrideServiceEpriviteKeyJsonFile(cr *config.CRSpec, service *serviceT, ej
 		ePriviteKeyMap["kid"] = service.Kid
 
 		if service.Name == "edge-auth" {
-			fmt.Println("inside edge-auth keys")
 			loginStateKey := make([]byte, 32)
 			if _, err := rand.Read(loginStateKey); err != nil {
 				return err
