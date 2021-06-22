@@ -98,13 +98,11 @@ func overrideServiceEpriviteKeyJsonFile(cr *config.CRSpec, service *serviceT, ej
 				return err
 			} else {
 				ePriviteKeyMap["access_private_key"] = accessTokenPrivateKey
-				fmt.Printf("edge-auth access_private_key: %s", accessTokenPrivateKey)
 			}
 
 			if _, accessTokenRefreshPrivateKey, err := keys.GeneratePrivateKeyAndPem(); err != nil {
 				return err
 			} else {
-				fmt.Printf("edge-auth refresh_private_key : %s", accessTokenRefreshPrivateKey)
 				ePriviteKeyMap["refresh_private_key"] = accessTokenRefreshPrivateKey
 			}
 		}
