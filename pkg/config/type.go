@@ -58,6 +58,8 @@ type NameValue struct {
 	Name      string     `yaml:"name,omitempty" json:"name,omitempty"`
 	Value     string     `yaml:"value,omitempty" json:"value,omitempty"`
 	ValueFrom *ValueFrom `yaml:"valueFrom,omitempty" json:"valueFrom,omitempty"`
+	// just to indicate if it is one time set only
+	ReadOnly bool `yaml:"readOnly,omitempty" json:"readOnly,omitempty"`
 }
 
 type ValueFrom struct {
