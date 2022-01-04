@@ -59,7 +59,8 @@ type NameValue struct {
 	Value     string     `yaml:"value,omitempty" json:"value,omitempty"`
 	ValueFrom *ValueFrom `yaml:"valueFrom,omitempty" json:"valueFrom,omitempty"`
 	// just to indicate if it is one time set only
-	ReadOnly bool `yaml:"readOnly,omitempty" json:"readOnly,omitempty"`
+	ReadOnly    bool   `yaml:"readOnly,omitempty" json:"readOnly,omitempty"`
+	Description string `yaml:"description,omitempty" json:"description,omitempty"`
 }
 
 type ValueFrom struct {
@@ -80,10 +81,10 @@ type Repo struct {
 }
 
 type OpsRunner struct {
-	Enabled     string `json:"enabled,omitempty" yaml:"enabled,omitempty"`
-	Schedule    string `json:"schedule,omitempty" yaml:"schedule,omitempty"`
-	WatchBranch string `json:"watchBranch,omitempty" yaml:"watchBranch,omitempty"`
-	Image       string `json:"image,omitempty" yaml:"image,omitempty"`
+	Enabled         string `json:"enabled,omitempty" yaml:"enabled,omitempty"`
+	Schedule        string `json:"schedule,omitempty" yaml:"schedule,omitempty"`
+	WatchBranch     string `json:"watchBranch,omitempty" yaml:"watchBranch,omitempty"`
+	Image           string `json:"image,omitempty" yaml:"image,omitempty"`
 	ImagePullPolicy string `json:"imagePullPolicy,omitempty" yaml:"imagePullPolicy,omitempty"`
 }
 
